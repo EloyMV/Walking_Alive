@@ -6,10 +6,19 @@ const routeIdParams = z.object({
 
 const routeBody = z.object({
   title: z.string().trim().min(1, 'El título es obligatorio').max(120),
-  location: z.string().trim().min(1, 'La ubicación es obligatoria').max(100),
+  location: z.string().trim().min(1, 'La ubicación es obligatoria').max(100).optional(),
   distanceKm: z.number().min(0.1, 'La distancia debe ser de al menos 0.1 km'),
   difficulty: z.enum(['fácil', 'moderada', 'difícil']),
   description: z.string().trim().max(500).optional(),
+  categoryId: routeIdParams.shape.id.nullable().optional(),
+  locationId: routeIdParams.shape.id.nullable().optional(),
+  guideId: routeIdParams.shape.id.nullable().optional(),
+  createdByUserId: routeIdParams.shape.id.nullable().optional(),
+  durationMinutes: z.number().int().min(0).optional(),
+  startAt: z.string().datetime({ offset: true }).optional(),
+  recommendedEquipment: z.string().trim().max(5000).optional(),
+  minParticipants: z.number().int().min(1).optional(),
+  maxParticipants: z.number().int().min(1).optional(),
   status: z.string().trim().min(1).max(50).optional(),
   isActive: z.boolean().optional()
 }).strict();
@@ -25,7 +34,10 @@ export const getRouteBySlugSchema = z.object({
 });
 
 export const createRouteSchema = z.object({
-  body: routeBody
+  body: routeBody.refine((data) => Boolean(data.location || data.locationId), {
+    message: 'Debe proporcionar location o locationId',
+    path: ['locationId']
+  })
 });
 
 export const updateRouteSchema = z.object({

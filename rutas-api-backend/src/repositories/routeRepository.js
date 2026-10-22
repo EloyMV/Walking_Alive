@@ -1,6 +1,27 @@
 import { Route } from '../models/Route.js';
+import { Category } from '../models/Category.js';
+import { Location } from '../models/Location.js';
+import { Guide } from '../models/Guide.js';
+import { User } from '../models/User.js';
 
-const writableFields = ['title', 'location', 'distanceKm', 'difficulty', 'description', 'status', 'isActive'];
+const routePopulate = [
+  { path: 'categoryId', model: Category, match: { deletedAt: null } },
+  { path: 'locationId', model: Location, match: { deletedAt: null } },
+  { path: 'guideId', model: Guide, match: { deletedAt: null } },
+  {
+    path: 'createdByUserId',
+    model: User,
+    match: { deletedAt: null },
+    select: 'name lastName email slug status isActive'
+  }
+];
+
+const writableFields = [
+  'title', 'slug', 'location', 'distanceKm', 'difficulty', 'description',
+  'categoryId', 'locationId', 'guideId', 'createdByUserId',
+  'durationMinutes', 'startAt', 'recommendedEquipment',
+  'minParticipants', 'maxParticipants', 'status', 'isActive'
+];
 const getWritableData = (data) =>
   Object.fromEntries(
     writableFields
@@ -10,23 +31,23 @@ const getWritableData = (data) =>
 
 export const routeRepository = {
   findAll: async () => {
-    const routes = await Route.find({ deletedAt: null }).sort({ createdAt: -1 });
+    const routes = await Route.find({ deletedAt: null }).sort({ createdAt: -1 }).populate(routePopulate);
     return routes;
   },
 
   findById: async (id) => {
-    const route = await Route.findOne({ _id: id, deletedAt: null });
+    const route = await Route.findOne({ _id: id, deletedAt: null }).populate(routePopulate);
     return route;
   },
 
   findBySlug: async (slug) => {
-    const route = await Route.findOne({ slug, deletedAt: null });
+    const route = await Route.findOne({ slug, deletedAt: null }).populate(routePopulate);
     return route;
   },
 
   create: async (data) => {
     const route = await Route.create(getWritableData(data));
-    return route;
+    return route.populate(routePopulate);
   },
 
   update: async (id, data) => {
@@ -37,10 +58,8 @@ export const routeRepository = {
 
     const writableData = getWritableData(data);
     Object.assign(route, writableData);
-    if (Object.hasOwn(writableData, 'title')) {
-      route.slug = data.slug;
-    }
-    return await route.save();
+    await route.save();
+    return route.populate(routePopulate);
   },
 
   softDelete: async (id) => {
@@ -48,7 +67,7 @@ export const routeRepository = {
       { _id: id, deletedAt: null },
       { $set: { deletedAt: new Date(), isActive: false } },
       { new: true }
-    );
+    ).populate(routePopulate);
     return route;
   },
 
@@ -57,7 +76,7 @@ export const routeRepository = {
       { _id: id, deletedAt: null },
       { $set: { isActive } },
       { new: true, runValidators: true }
-    );
+    ).populate(routePopulate);
     return route;
   },
 
@@ -67,7 +86,8 @@ export const routeRepository = {
       return null;
     }
     route.status = status;
-    return await route.save();
+    await route.save();
+    return route.populate(routePopulate);
   },
 
   slugExists: async (slug, excludeId) => {
@@ -84,7 +104,7 @@ export const routeRepository = {
       { _id: id, deletedAt: { $ne: null } },
       { $set: { deletedAt: null, isActive: true } },
       { new: true, runValidators: true, includeDeleted: true }
-    );
+    ).populate(routePopulate);
     return route;
   }
 };

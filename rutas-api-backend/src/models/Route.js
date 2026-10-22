@@ -2,6 +2,54 @@ import mongoose from 'mongoose';
 
 const routeSchema = new mongoose.Schema(
   {
+    categoryId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Category'
+    },
+    locationId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Location'
+    },
+    guideId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Guide'
+    },
+    createdByUserId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    },
+    durationMinutes: {
+      type: Number,
+      min: 0,
+      validate: Number.isInteger
+    },
+    minParticipants: {
+      type: Number,
+      default: 1,
+      min: 1,
+      validate: Number.isInteger
+    },
+    maxParticipants: {
+      type: Number,
+      default: 20,
+      min: 1,
+      validate: [
+        { validator: Number.isInteger, message: 'maxParticipants debe ser un entero' },
+        {
+          validator: function (value) { return value >= this.minParticipants; },
+          message: 'maxParticipants no puede ser menor que minParticipants'
+        }
+      ]
+    },
+    startAt: {
+      type: Date
+    },
+    recommendedEquipment: {
+      type: String,
+      trim: true,
+      default: '',
+      maxlength: 5000
+    },
     title: {
       type: String,
       required: [true, 'El título es obligatorio'],
@@ -31,7 +79,8 @@ const routeSchema = new mongoose.Schema(
     },
     location: {
       type: String,
-      required: [true, 'La ubicación es obligatoria'],
+      // Compatibilidad con las rutas anteriores que guardaban la ubicación como texto.
+      required: function () { return !this.locationId; },
       trim: true,
       maxlength: [100, 'La ubicación no puede superar los 100 caracteres']
     },
