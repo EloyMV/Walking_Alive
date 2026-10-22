@@ -1,0 +1,23 @@
+{
+  "name": "rutas-frontend-react",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@vitejs/plugin-react": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "react-hook-form": "^7.81.0",
+    "@hookform/resolvers": "^5.4.0",
+    "react-router-dom": "latest",
+    "sweetalert2": "^11.26.25",
+    "vite": "latest",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {}
+}

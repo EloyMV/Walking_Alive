@@ -1,0 +1,19 @@
+[
+  {
+    "_id": {
+      "$oid": "660000000000000000000021"
+    },
+    "name": "Senderismo",
+    "description": "Rutas a pie por entornos naturales",
+    "slug": "senderismo",
+    "status": "published",
+    "isActive": true,
+    "deletedAt": null,
+    "createdAt": {
+      "$date": "2026-10-20T12:00:00Z"
+    },
+    "updatedAt": {
+      "$date": "2026-10-20T12:00:00Z"
+    }
+  }
+]

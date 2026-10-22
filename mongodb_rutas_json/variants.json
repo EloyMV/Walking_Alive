@@ -1,0 +1,30 @@
+[
+  {
+    "_id": {
+      "$oid": "660000000000000000000061"
+    },
+    "routeId": {
+      "$oid": "660000000000000000000051"
+    },
+    "name": "Adulto con transporte",
+    "description": "Ruta guiada con transporte incluido",
+    "sku": "CARES-ADULTO-BUS",
+    "price": {
+      "$numberDecimal": "35.00"
+    },
+    "currency": "EUR",
+    "capacity": 20,
+    "minimumAge": 18,
+    "includesTransport": true,
+    "slug": "cares-adulto-transporte",
+    "status": "available",
+    "isActive": true,
+    "deletedAt": null,
+    "createdAt": {
+      "$date": "2026-10-20T12:00:00Z"
+    },
+    "updatedAt": {
+      "$date": "2026-10-20T12:00:00Z"
+    }
+  }
+]

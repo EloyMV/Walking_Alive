@@ -1,0 +1,18 @@
+select{width:100%;border:1px solid #d7d7d2;border-radius:10px;background:#fff;padding:12px 13px;font:inherit;color:#222}
+.table-wrap{overflow-x:auto}
+.data-table{width:100%;border-collapse:collapse;text-align:left}
+.data-table th,.data-table td{padding:16px 18px;border-bottom:1px solid #eee;vertical-align:middle}
+.data-table th{font-size:.78rem;letter-spacing:.07em;text-transform:uppercase;color:#777}
+.data-table tr:last-child td{border-bottom:0}
+.table-subtitle{display:block;color:#777;font-size:.88rem}
+.skeleton-list{display:grid;gap:14px}
+.skeleton-row{padding:20px;display:flex;align-items:center;gap:18px}
+.skeleton-content{flex:1;display:grid;gap:12px}
+.skeleton-block{display:block;background:linear-gradient(90deg,#eee 25%,#f7f7f5 50%,#eee 75%);background-size:200% 100%;border-radius:8px;animation:skeleton-shimmer 1.4s infinite}
+.skeleton-icon{width:48px;height:48px}
+.skeleton-title{height:18px;width:38%}
+.skeleton-line{height:14px;width:68%}
+.skeleton-action{height:36px;width:90px}
+.form-grid select[aria-invalid=true],.form-grid input[aria-invalid=true],.form-grid textarea[aria-invalid=true]{border-color:#b42318}
+@keyframes skeleton-shimmer{to{background-position:-200% 0}}
+@media(max-width:700px){.data-table{min-width:680px}.skeleton-action{display:none}}

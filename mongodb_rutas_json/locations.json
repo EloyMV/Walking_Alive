@@ -1,0 +1,25 @@
+[
+  {
+    "_id": {
+      "$oid": "660000000000000000000031"
+    },
+    "name": "Picos de Europa",
+    "description": "Entorno de la Ruta del Cares",
+    "meetingPoint": "Aparcamiento de Poncebos",
+    "city": "Cabrales",
+    "region": "Asturias",
+    "country": "España",
+    "latitude": null,
+    "longitude": null,
+    "slug": "picos-de-europa",
+    "status": "published",
+    "isActive": true,
+    "deletedAt": null,
+    "createdAt": {
+      "$date": "2026-10-20T12:00:00Z"
+    },
+    "updatedAt": {
+      "$date": "2026-10-20T12:00:00Z"
+    }
+  }
+]

@@ -1,0 +1,26 @@
+[
+  {
+    "_id": {
+      "$oid": "660000000000000000000041"
+    },
+    "userId": {
+      "$oid": "660000000000000000000012"
+    },
+    "name": "Carlos Martínez",
+    "description": "Guía de montaña y senderismo",
+    "email": "carlos@example.com",
+    "phone": "+34600111222",
+    "licenseNumber": "GUIA-001",
+    "specialty": "Montaña",
+    "slug": "carlos-martinez-guia",
+    "status": "available",
+    "isActive": true,
+    "deletedAt": null,
+    "createdAt": {
+      "$date": "2026-10-20T12:00:00Z"
+    },
+    "updatedAt": {
+      "$date": "2026-10-20T12:00:00Z"
+    }
+  }
+]

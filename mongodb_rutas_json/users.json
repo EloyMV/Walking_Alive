@@ -1,0 +1,25 @@
+[
+  {
+    "_id": {
+      "$oid": "660000000000000000000011"
+    },
+    "roleId": {
+      "$oid": "660000000000000000000001"
+    },
+    "name": "María",
+    "lastName": "Pérez",
+    "email": "maria@example.com",
+    "passwordHash": "HASH_DE_EJEMPLO_NO_VALIDO",
+    "phone": null,
+    "slug": "maria-perez",
+    "status": "enabled",
+    "isActive": true,
+    "deletedAt": null,
+    "createdAt": {
+      "$date": "2026-10-20T12:00:00Z"
+    },
+    "updatedAt": {
+      "$date": "2026-10-20T12:00:00Z"
+    }
+  }
+]

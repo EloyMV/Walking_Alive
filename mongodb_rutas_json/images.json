@@ -1,0 +1,30 @@
+[
+  {
+    "_id": {
+      "$oid": "660000000000000000000071"
+    },
+    "routeId": {
+      "$oid": "660000000000000000000051"
+    },
+    "variantId": null,
+    "categoryId": null,
+    "locationId": null,
+    "guideId": null,
+    "url": "/uploads/ruta-del-cares.jpg",
+    "altText": "Sendero de la Ruta del Cares",
+    "position": 1,
+    "isCover": true,
+    "source": "own",
+    "author": null,
+    "slug": "imagen-ruta-cares",
+    "status": "published",
+    "isActive": true,
+    "deletedAt": null,
+    "createdAt": {
+      "$date": "2026-10-20T12:00:00Z"
+    },
+    "updatedAt": {
+      "$date": "2026-10-20T12:00:00Z"
+    }
+  }
+]

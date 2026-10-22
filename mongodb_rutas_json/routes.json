@@ -1,0 +1,38 @@
+[
+  {
+    "_id": {
+      "$oid": "660000000000000000000051"
+    },
+    "categoryId": {
+      "$oid": "660000000000000000000021"
+    },
+    "locationId": {
+      "$oid": "660000000000000000000031"
+    },
+    "guideId": {
+      "$oid": "660000000000000000000041"
+    },
+    "createdByUserId": {
+      "$oid": "660000000000000000000011"
+    },
+    "title": "Ruta del Cares",
+    "description": "Recorrido guiado por la garganta del Cares",
+    "distanceKm": 12,
+    "difficulty": "moderada",
+    "durationMinutes": 240,
+    "startAt": {
+      "$date": "2026-11-15T08:00:00Z"
+    },
+    "recommendedEquipment": "Botas de montaña, agua y abrigo",
+    "slug": "ruta-del-cares",
+    "status": "scheduled",
+    "isActive": true,
+    "deletedAt": null,
+    "createdAt": {
+      "$date": "2026-10-20T12:00:00Z"
+    },
+    "updatedAt": {
+      "$date": "2026-10-20T12:00:00Z"
+    }
+  }
+]

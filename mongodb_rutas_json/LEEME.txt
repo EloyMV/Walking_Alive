@@ -1,0 +1,8 @@
+BASE DE DATOS: gestion_rutas
+
+8 colecciones JSON en formato Extended JSON (ObjectId, fechas y Decimal128).
+En MongoDB Compass, crea la base gestion_rutas y cada colección; usa Add Data > Import JSON para importar su archivo.
+Las rutas se relacionan con categorías, ubicaciones, guías y usuarios por ObjectId.
+Las imágenes de ejemplo usan rutas y guía como propietarios.
+Las URLs /uploads/ son rutas de ejemplo, no archivos de imagen incluidos.
+Las contraseñas son marcadores de ejemplo: genera hashes reales antes de habilitar el login.
