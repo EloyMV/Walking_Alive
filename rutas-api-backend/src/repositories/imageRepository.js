@@ -13,3 +13,29 @@ export const imageRepository = createRepository(Image, ["routeId","variantId","c
   { path: 'locationId', model: Location, match: { deletedAt: null } },
   { path: 'guideId', model: Guide, match: { deletedAt: null } }
 ]);
+
+// Consultas en lote: conservan routeId como ID para agrupar sin cargar la ruta.
+imageRepository.findActiveByRouteIds = async (routeIds) =>
+  Image.find({ routeId: { $in: routeIds }, deletedAt: null, isActive: true })
+    .sort({ position: 1, _id: 1 });
+
+imageRepository.deactivateCoverByRoute = async (routeId) =>
+  Image.updateMany({ routeId, isCover: true, deletedAt: null }, { $set: { isActive: false } });
+
+imageRepository.upsertCoverByRoute = async (routeId, url, altText) => {
+  const cover = await Image.findOne({ routeId, isCover: true, deletedAt: null }).sort({ createdAt: 1, _id: 1 });
+  if (cover) {
+    cover.url = url;
+    cover.altText = altText;
+    cover.isActive = true;
+    await cover.save();
+    await Image.updateMany(
+      { routeId, isCover: true, deletedAt: null, _id: { $ne: cover._id } },
+      { $set: { isActive: false } }
+    );
+    return cover;
+  }
+  const image = new Image({ routeId, url, altText, position: 0, isCover: true, source: 'manual' });
+  image.slug = 'portada-' + image._id;
+  return image.save();
+};

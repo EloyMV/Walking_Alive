@@ -30,10 +30,21 @@ const getWritableData = (data) =>
   );
 
 export const routeRepository = {
-  findAll: async () => {
-    const routes = await Route.find({ deletedAt: null }).sort({ createdAt: -1 }).populate(routePopulate);
+  findAll: async (filters = {}) => {
+    const allowedFilters = ['categoryId', 'locationId', 'guideId', 'createdByUserId', 'difficulty', 'status', 'isActive'];
+    const filter = Object.fromEntries(allowedFilters.filter((field) => Object.hasOwn(filters, field)).map((field) => [field, filters[field]]));
+    const routes = await Route.find({ ...filter, deletedAt: null }).sort({ createdAt: -1 }).populate(routePopulate);
     return routes;
   },
+
+  isTitleUsed: async (title, excludeId) => {
+    const filter = { title, deletedAt: null };
+    if (excludeId) filter._id = { $ne: excludeId };
+    return Boolean(await Route.exists(filter));
+  },
+
+  findByIdIncludingDeleted: async (id) =>
+    Route.findById(id).setOptions({ includeDeleted: true }),
 
   findById: async (id) => {
     const route = await Route.findOne({ _id: id, deletedAt: null }).populate(routePopulate);

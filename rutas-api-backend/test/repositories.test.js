@@ -71,7 +71,8 @@ test('Repositorios del seed y servicio de rutas con MongoDB', async (t) => {
     await t.test('Service: relaciones, slugs, actualización y errores', async () => {
       const payload = { ...fixtures.route, title: 'Ruta del servicio', categoryId: ids.category, locationId: ids.location, guideId: ids.guide, createdByUserId: ids.user };
       const first = await routeService.createRoute(payload);
-      const second = await routeService.createRoute(payload);
+      await assert.rejects(routeService.createRoute(payload), { statusCode: 409 });
+      const second = await routeService.createRoute({ ...payload, title: 'Ruta del servício' });
       assert.notEqual(first.slug, second.slug);
       assert.equal((await routeService.getRouteBySlug(first.slug)).id, first.id);
       assert.equal((await routeService.updateRoute(first.id, { title: 'Nuevo título' })).title, 'Nuevo título');
@@ -88,6 +89,41 @@ test('Repositorios del seed y servicio de rutas con MongoDB', async (t) => {
       assert.equal((await repos.user.findById(ids.user)).passwordHash, undefined);
       await assert.rejects(repos.variant.update(ids.variant, { price: '-1' }), { name: 'ValidationError' });
       await assert.rejects(repos.route.update(ids.route, { maxParticipants: 1 }), { name: 'ValidationError' });
+    });
+    await t.test('Service de referencia: portadas, imágenes, asociaciones y borrado repetido', async () => {
+      const { createRouteSchema, updateRouteSchema } = await import('../src/middlewares/routeSchemas.js');
+      const input = { ...fixtures.route, title: 'Ruta con imágenes', locationId: String(ids.location), imageUrl: ' /cover.jpg ' };
+      const parsed = createRouteSchema.parse({ body: input }).body;
+      const route = await routeService.createRoute(parsed);
+      assert.equal(route.images.length, 1);
+      assert.equal(route.images[0].url, '/cover.jpg');
+      const coverId = route.images[0]._id;
+      const gallery = await repos.image.create({ routeId: route._id, url: '/gallery.jpg', source: 'example', slug: 'gallery', position: 2 });
+      const changed = await routeService.updateRoute(route.id, updateRouteSchema.parse({ params: { id: route.id }, body: { imageUrl: '/new-cover.jpg' } }).body);
+      assert.equal(changed.images.length, 2);
+      assert.equal(changed.images[0]._id, coverId);
+      assert.equal(changed.images[0].url, '/new-cover.jpg');
+      assert.equal((await routeService.getRouteBySlug(route.slug)).images.length, 2);
+      const listing = await routeService.getAllRoutes({ locationId: ids.location });
+      assert.equal(listing.find((item) => item.id === route.id).images.length, 2);
+      assert.deepEqual(await routeService.getAllRoutes({ status: 'nonexistent' }), []);
+      await repos.image.changeIsActive(gallery.id, false);
+      assert.equal((await routeService.getRouteById(route.id)).images.length, 1);
+      assert.deepEqual((await routeService.updateRoute(route.id, { imageUrl: null })).images, []);
+      assert.equal((await routeService.updateRoute(route.id, { imageUrl: '/reactivated.jpg' })).images[0]._id, coverId);
+      assert.deepEqual((await routeService.updateRoute(route.id, { imageUrl: '  ' })).images, []);
+      await assert.rejects(routeService.updateRoute(route.id, { imageUrl: 123 }), { statusCode: 400 });
+      const associated = await routeService.updateAssociations(route.id, { categoryId: ids.category, title: 'Ignorado' });
+      assert.equal(associated.title, route.title);
+      assert.equal(String(associated.categoryId._id), String(ids.category));
+      const removed = await routeService.updateAssociations(route.id, { categoryId: null });
+      assert.equal(removed.categoryId, null);
+      await assert.rejects(routeService.updateRoute(route.id, { title: 'Nuevo título' }), { statusCode: 409 });
+      await assert.rejects(routeService.updateAssociations(route.id, { guideId: 'incorrecto' }), { statusCode: 400 });
+      assert.equal((await routeService.setActivation(route.id, false)).isActive, false);
+      assert.deepEqual(await routeService.deleteRoute(route.id), { alreadyDeleted: false });
+      assert.deepEqual(await routeService.deleteRoute(route.id), { alreadyDeleted: true });
+      await assert.rejects(routeService.deleteRoute(new mongoose.Types.ObjectId()), { statusCode: 404 });
     });
   } finally {
     await mongoose.connection.dropDatabase();

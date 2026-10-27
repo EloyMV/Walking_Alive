@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { imageRepository } from '../repositories/imageRepository.js';
 import { routeRepository } from '../repositories/routeRepository.js';
 import { categoryRepository } from '../repositories/categoryRepository.js';
 import { locationRepository } from '../repositories/locationRepository.js';
@@ -14,13 +15,20 @@ class RouteService {
     if (data.minParticipants === undefined) data.minParticipants = 1;
     if (data.maxParticipants === undefined) data.maxParticipants = 20;
     this.#validateParticipants(data.minParticipants, data.maxParticipants);
-    await this.#validate_relations(data);
+    await this.#ensureValidRelations(data);
 
+    if (await routeRepository.isTitleUsed(data.title)) {
+      throw new AppError('Ya existe una ruta con este título', 409);
+    }
     const reservedSlugs = new Set();
     while (true) {
       const slug = await this.#buildUniqueSlug(data.title, undefined, reservedSlugs);
       try {
-        return await routeRepository.create({ ...data, slug });
+        const created = await routeRepository.create({ ...data, slug });
+        if (Object.hasOwn(payload, 'imageUrl')) {
+          await this.#syncCoverImage(created._id, payload.imageUrl, created.title);
+        }
+        return this.#attachImagesToSingle(created);
       } catch (error) {
         if (!this.#isSlugDuplicate(error)) throw error;
         reservedSlugs.add(slug);
@@ -28,8 +36,9 @@ class RouteService {
     }
   }
 
-  async getAllRoutes() {
-    return routeRepository.findAll();
+  async getAllRoutes(filters = {}) {
+    const routes = await routeRepository.findAll(filters);
+    return this.#attachImagesToCollection(routes);
   }
 
   async findById(id) {
@@ -40,7 +49,7 @@ class RouteService {
   }
 
   async getRouteById(id) {
-    return this.findById(id);
+    return this.#attachImagesToSingle(await this.findById(id));
   }
 
   async getRouteBySlug(slug) {
@@ -49,13 +58,13 @@ class RouteService {
     }
     const route = await routeRepository.findBySlug(slug.trim());
     if (!route) throw new AppError('Ruta no encontrada', 404);
-    return route;
+    return this.#attachImagesToSingle(route);
   }
 
   async updateRoute(id, payload) {
     const current = await this.findById(id);
     const data = this.#toRoutePayload(payload);
-    if (Object.keys(data).length === 0) {
+    if (Object.keys(data).length === 0 && !Object.hasOwn(payload, 'imageUrl')) {
       throw new AppError('Debe proporcionar al menos un campo para actualizar', 400);
     }
 
@@ -63,9 +72,11 @@ class RouteService {
     const minParticipants = Object.hasOwn(data, 'minParticipants') ? data.minParticipants : (current.minParticipants ?? 1);
     const maxParticipants = Object.hasOwn(data, 'maxParticipants') ? data.maxParticipants : (current.maxParticipants ?? 20);
     this.#validateParticipants(minParticipants, maxParticipants);
-    await this.#validate_relations(data);
+    await this.#ensureValidRelations(data);
 
-    // Si cambia solo uno de los límites, se compara con el valor ya guardado.
+    if (Object.hasOwn(data, 'title') && await routeRepository.isTitleUsed(data.title, id)) {
+      throw new AppError('Ya existe una ruta con este título', 409);
+    }
     const reservedSlugs = new Set();
     while (true) {
       if (Object.hasOwn(data, 'title')) {
@@ -74,12 +85,35 @@ class RouteService {
       try {
         const updated = await routeRepository.update(id, data);
         if (!updated) throw new AppError('Ruta no encontrada', 404);
-        return updated;
+        if (Object.hasOwn(payload, 'imageUrl')) {
+          await this.#syncCoverImage(updated._id, payload.imageUrl, updated.title);
+        }
+        return this.#attachImagesToSingle(updated);
       } catch (error) {
         if (!data.slug || !this.#isSlugDuplicate(error)) throw error;
         reservedSlugs.add(data.slug);
       }
     }
+  }
+
+  async updateAssociations(id, payload) {
+    const data = this.#toRoutePayload(payload);
+    const fields = ['categoryId', 'locationId', 'guideId', 'createdByUserId'];
+    const associations = Object.fromEntries(fields.filter((field) => Object.hasOwn(data, field)).map((field) => [field, data[field]]));
+    return this.updateRoute(id, associations);
+  }
+
+  async setActivation(id, isActive) {
+    return this.changeIsActive(id, isActive);
+  }
+
+  async deleteRoute(id) {
+    this.#validateObjectId(id);
+    const current = await routeRepository.findByIdIncludingDeleted(id);
+    if (!current) throw new AppError('Ruta no encontrada', 404);
+    if (current.deletedAt) return { alreadyDeleted: true };
+    await routeRepository.softDelete(id);
+    return { alreadyDeleted: false };
   }
 
   async softDelete(id) {
@@ -116,7 +150,7 @@ class RouteService {
     return route;
   }
 
-  async #validate_relations(payload) {
+  async #ensureValidRelations(payload) {
     const relations = [
       ['categoryId', categoryRepository, 'Categoría'],
       ['locationId', locationRepository, 'Ubicación'],
@@ -157,6 +191,9 @@ class RouteService {
     if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
       throw new AppError('El payload de la ruta debe ser un objeto', 400);
     }
+    if (Object.hasOwn(payload, 'imageUrl') && payload.imageUrl !== null && typeof payload.imageUrl !== 'string') {
+      throw new AppError('imageUrl debe ser un texto o null', 400);
+    }
     // _id, slug, deletedAt y las fechas de auditoría no se reciben del cliente.
     const fields = [
       'title', 'description', 'location', 'distanceKm', 'difficulty',
@@ -177,6 +214,39 @@ class RouteService {
         return candidate;
       }
     }
+  }
+
+  async #syncCoverImage(routeId, imageUrl, title) {
+    if (typeof imageUrl !== 'string' || !imageUrl.trim()) {
+      await imageRepository.deactivateCoverByRoute(routeId);
+      return;
+    }
+    await imageRepository.upsertCoverByRoute(routeId, imageUrl.trim(), title ? 'Portada: ' + title : '');
+  }
+
+  async #attachImagesToCollection(routes) {
+    if (!Array.isArray(routes) || routes.length === 0) return routes;
+    const images = await imageRepository.findActiveByRouteIds(routes.map((route) => route._id));
+    const imagesByRoute = new Map();
+    for (const image of images) {
+      const key = String(image.routeId);
+      if (!imagesByRoute.has(key)) imagesByRoute.set(key, []);
+      imagesByRoute.get(key).push({
+        _id: String(image._id), url: image.url, altText: image.altText,
+        position: image.position, isCover: image.isCover
+      });
+    }
+    return routes.map((route) => {
+      const plain = typeof route.toObject === 'function' ? route.toObject({ virtuals: true }) : { ...route };
+      plain.images = imagesByRoute.get(String(plain._id)) || [];
+      return plain;
+    });
+  }
+
+  async #attachImagesToSingle(route) {
+    if (!route) return route;
+    const [enriched] = await this.#attachImagesToCollection([route]);
+    return enriched;
   }
 
   #isSlugDuplicate(error) {

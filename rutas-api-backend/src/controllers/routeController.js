@@ -48,7 +48,7 @@ export const routeController = {
 
   softDelete: async (req, res, next) => {
     try {
-      await routeService.softDelete(req.params.id);
+      await routeService.deleteRoute(req.params.id);
       res.status(204).send();
     } catch (error) {
       next(error);
