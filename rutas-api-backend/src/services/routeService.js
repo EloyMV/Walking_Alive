@@ -1,9 +1,9 @@
 import mongoose from 'mongoose';
 import { routeRepository } from '../repositories/routeRepository.js';
-import { Category } from '../models/Category.js';
-import { Location } from '../models/Location.js';
-import { Guide } from '../models/Guide.js';
-import { User } from '../models/User.js';
+import { categoryRepository } from '../repositories/categoryRepository.js';
+import { locationRepository } from '../repositories/locationRepository.js';
+import { guideRepository } from '../repositories/guideRepository.js';
+import { userRepository } from '../repositories/userRepository.js';
 import { generateSlug } from '../utils/slug.util.js';
 import { AppError } from '../utils/app-error.js';
 
@@ -117,17 +117,16 @@ class RouteService {
   }
 
   async #validate_relations(payload) {
-    // Se consultan los modelos existentes; no se crean servicios de otros módulos.
     const relations = [
-      ['categoryId', Category, 'Categoría'],
-      ['locationId', Location, 'Ubicación'],
-      ['guideId', Guide, 'Guía'],
-      ['createdByUserId', User, 'Usuario creador']
+      ['categoryId', categoryRepository, 'Categoría'],
+      ['locationId', locationRepository, 'Ubicación'],
+      ['guideId', guideRepository, 'Guía'],
+      ['createdByUserId', userRepository, 'Usuario creador']
     ];
-    for (const [field, model, label] of relations) {
+    for (const [field, repository, label] of relations) {
       if (!Object.hasOwn(payload, field) || payload[field] === null) continue;
       this.#validateObjectId(payload[field], `${field} debe ser un ID válido de MongoDB`);
-      const exists = await model.exists({ _id: payload[field], deletedAt: null });
+      const exists = await repository.findById(payload[field]);
       if (!exists) throw new AppError(`${label} asociado no encontrado`, 404);
     }
   }
