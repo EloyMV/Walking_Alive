@@ -3,7 +3,7 @@ import { routeService } from '../services/routeService.js';
 export const routeController = {
   getRoutes: async (req, res, next) => {
     try {
-      const routes = await routeService.getAllRoutes();
+      const routes = await routeService.getAllRoutes(req.query);
       res.status(200).json(routes);
     } catch (error) {
       next(error);
@@ -41,6 +41,15 @@ export const routeController = {
     try {
       const updated = await routeService.updateRoute(req.params.id, req.body);
       res.status(200).json(updated);
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  updateAssociations: async (req, res, next) => {
+    try {
+      const route = await routeService.updateAssociations(req.params.id, req.body);
+      res.status(200).json(route);
     } catch (error) {
       next(error);
     }

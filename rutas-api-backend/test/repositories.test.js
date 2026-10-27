@@ -91,7 +91,7 @@ test('Repositorios del seed y servicio de rutas con MongoDB', async (t) => {
       await assert.rejects(repos.route.update(ids.route, { maxParticipants: 1 }), { name: 'ValidationError' });
     });
     await t.test('Service de referencia: portadas, imágenes, asociaciones y borrado repetido', async () => {
-      const { createRouteSchema, updateRouteSchema } = await import('../src/middlewares/routeSchemas.js');
+      const { createRouteSchema, updateRouteSchema } = await import('../src/routes/routeRoutes.js');
       const input = { ...fixtures.route, title: 'Ruta con imágenes', locationId: String(ids.location), imageUrl: ' /cover.jpg ' };
       const parsed = createRouteSchema.parse({ body: input }).body;
       const route = await routeService.createRoute(parsed);

@@ -18,6 +18,10 @@ export const createRepository = (model, writableFields, populate = []) => {
       return document;
     },
 
+    // Sin populate: permite comprobar las referencias originales al restaurar.
+    findByIdIncludingDeleted: async (id) =>
+      model.findById(id).setOptions({ includeDeleted: true }),
+
     findBySlug: async (slug) => {
       const document = await model.findOne({ slug, deletedAt: null }).populate(populate);
       return document;
