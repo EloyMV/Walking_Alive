@@ -162,9 +162,42 @@
   border-color: #d7dfd9;
 }
 
-.route-status option {
+.route-status option, .route-difficulty option {
   background: #fffefb;
   color: #213d32;
+}
+
+.route-difficulty {
+  width: 120px;
+  min-width: 120px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 8px 24px 8px 11px;
+  font-size: .76rem;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.route-difficulty[data-difficulty="fácil"] {
+  background-color: #e6eee1;
+  color: #40663d;
+  border-color: #ccd9c3;
+}
+
+.route-difficulty[data-difficulty="moderada"] {
+  background-color: #f9eedc;
+  color: #996b25;
+  border-color: #ecdbba;
+}
+
+.route-difficulty[data-difficulty="difícil"] {
+  background-color: #fcf0e9;
+  color: #985b42;
+  border-color: #f0ddd0;
+}
+
+.route-difficulty:disabled {
+  cursor: not-allowed;
 }
 
 .route-availability {
@@ -301,7 +334,7 @@
   color: #606060;
 }
 
-.route-row-deleted .route-status:disabled {
+.route-row-deleted .route-status:disabled, .route-row-deleted .route-difficulty:disabled {
   color: #4b4b4b;
   background: #bdbdbd;
   border-color: #9d9d9d;

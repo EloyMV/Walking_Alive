@@ -15,7 +15,7 @@ function formatDate(value) {
 }
 
 export default function RouteList() {
-  const { routes, loading, error, loadRoutes, removeRoute, changeRouteActivation, changeRouteStatus, restoreRoute } = useRoutes();
+  const { routes, loading, error, loadRoutes, updateRoute, removeRoute, changeRouteActivation, changeRouteStatus, restoreRoute } = useRoutes();
   const [actionError, setActionError] = useState('');
   const [pendingRoutes, setPendingRoutes] = useState({});
   const liveRoutes = routes.filter((route) => !route.deletedAt);
@@ -67,7 +67,27 @@ export default function RouteList() {
       )
     },
     { key: 'distanceKm', label: 'Distancia', render: (route) => `${route.distanceKm} km` },
-    { key: 'difficulty', label: 'Dificultad' },
+    {
+      key: 'difficulty',
+      label: 'Dificultad',
+      render: (route) => (
+        <select
+          className="route-difficulty"
+          data-difficulty={route.difficulty}
+          aria-label={`Dificultad de ${route.title}`}
+          value={route.difficulty}
+          disabled={Boolean(route.deletedAt || pendingRoutes[route._id])}
+          onChange={(event) => {
+            const difficulty = event.target.value;
+            performAction(route, () => updateRoute(route._id, { difficulty }), 'No se pudo cambiar la dificultad de la ruta.');
+          }}
+        >
+          <option value="fácil">Fácil</option>
+          <option value="moderada">Moderada</option>
+          <option value="difícil">Difícil</option>
+        </select>
+      )
+    },
     {
       key: 'status',
       label: 'Estado',
@@ -183,7 +203,7 @@ export default function RouteList() {
         <Link className="button" to={ROUTES.routeNew}>Crear ruta</Link></div>
       ) : !error && (
         <>
-          <p className="table-scroll-hint">Desliza la tabla para cambiar el estado, la disponibilidad y ver las acciones →</p>
+          <p className="table-scroll-hint">Desliza la tabla para cambiar la dificultad, el estado y la disponibilidad →</p>
           <DataTable rows={routes} columns={columns} rowKey="_id" rowClassName={(route) => route.deletedAt ? 'route-row-deleted' : ''} />
         </>
       )}
