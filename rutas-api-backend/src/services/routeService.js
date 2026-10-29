@@ -7,6 +7,7 @@ import { guideRepository } from '../repositories/guideRepository.js';
 import { userRepository } from '../repositories/userRepository.js';
 import { generateSlug } from '../utils/slug.util.js';
 import { AppError } from '../utils/app-error.js';
+import { ROUTE_STATUSES } from '../utils/routeStatus.js';
 
 class RouteService {
   async createRoute(payload) {
@@ -135,10 +136,8 @@ class RouteService {
 
   async changeStatus(id, status) {
     this.#validateObjectId(id);
-    if (typeof status !== 'string' || !status.trim() || status.trim().length > 50) {
-      throw new AppError('El estado debe tener entre 1 y 50 caracteres', 400);
-    }
-    const route = await routeRepository.changeStatus(id, status.trim());
+    this.#validateStatus(status);
+    const route = await routeRepository.changeStatus(id, status);
     if (!route) throw new AppError('Ruta no encontrada', 404);
     return route;
   }
@@ -177,6 +176,12 @@ class RouteService {
     }
   }
 
+  #validateStatus(status) {
+    if (!ROUTE_STATUSES.includes(status)) {
+      throw new AppError('El estado debe ser programado, en curso o finalizado', 400);
+    }
+  }
+
   #validateParticipants(minParticipants, maxParticipants) {
     if (!Number.isInteger(minParticipants) || minParticipants < 1 ||
         !Number.isInteger(maxParticipants) || maxParticipants < 1) {
@@ -194,6 +199,7 @@ class RouteService {
     if (Object.hasOwn(payload, 'imageUrl') && payload.imageUrl !== null && typeof payload.imageUrl !== 'string') {
       throw new AppError('imageUrl debe ser un texto o null', 400);
     }
+    if (Object.hasOwn(payload, 'status') && payload.status !== undefined) this.#validateStatus(payload.status);
     // _id, slug, deletedAt y las fechas de auditoría no se reciben del cliente.
     const fields = [
       'title', 'description', 'location', 'distanceKm', 'difficulty',

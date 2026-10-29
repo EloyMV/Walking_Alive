@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { DEFAULT_ROUTE_STATUS, normalizeLegacyRouteStatus, ROUTE_STATUSES } from '../utils/routeStatus.js';
 
 const routeSchema = new mongoose.Schema(
   {
@@ -74,8 +75,11 @@ const routeSchema = new mongoose.Schema(
       type: String,
       trim: true,
       required: true,
-      maxlength: [50, 'El estado no puede superar los 50 caracteres'],
-      default: 'active'
+      enum: {
+        values: ROUTE_STATUSES,
+        message: 'El estado debe ser programado, en curso o finalizado'
+      },
+      default: DEFAULT_ROUTE_STATUS
     },
     location: {
       type: String,
@@ -109,6 +113,12 @@ const routeSchema = new mongoose.Schema(
     timestamps: true
   }
 );
+
+// Normalizar solo documentos ya guardados: no convertir entradas nuevas inválidas.
+// La próxima edición de una ruta antigua persiste su estado normalizado.
+routeSchema.post('init', function normalizeExistingStatus(route) {
+  route.status = normalizeLegacyRouteStatus(route.status);
+});
 
 routeSchema.pre(/^find/, function excludeDeleted(next) {
   if (!this.getOptions().includeDeleted) {

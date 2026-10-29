@@ -1,4 +1,4 @@
-# Walking Alive
+# WalkingAlive
 
 Proyecto para gestionar rutas senderistas y turísticas, con una API REST en Node.js y una interfaz en React.
 
@@ -49,9 +49,15 @@ Los archivos de `mongodb_rutas_json/` se pueden importar desde MongoDB Compass s
 | Método | Ruta | Operación |
 | --- | --- | --- |
 | GET | `/api/routes` | Listar rutas |
+| GET | `/api/routes?includeDeleted=true` | Listar rutas, incluidas las eliminadas mediante borrado lógico |
 | GET | `/api/routes/:id` | Consultar una ruta |
 | POST | `/api/routes` | Crear una ruta |
 | PATCH | `/api/routes/:id` | Actualizar una ruta |
-| DELETE | `/api/routes/:id` | Eliminar una ruta |
+| PATCH | `/api/routes/:id/is-active` | Activar o desactivar una ruta con `{ "isActive": true/false }` |
+| PATCH | `/api/routes/:id/status` | Cambiar el estado a `programado`, `en curso` o `finalizado` |
+| DELETE | `/api/routes/:id` | Eliminar una ruta mediante borrado lógico |
+| PATCH | `/api/routes/:id/restore` | Restaurar y activar una ruta eliminada |
+
+El listado del frontend permite cambiar el estado y la disponibilidad (`isActive`) directamente, y muestra descripción y fechas. Las rutas eliminadas permanecen visibles en gris y ofrecen la acción de restaurar. La creación y edición vuelven al listado al guardar.
 
 Las dependencias, los archivos `.env` y las compilaciones locales quedan excluidos del repositorio. Los archivos `.env.example` documentan la configuración necesaria.

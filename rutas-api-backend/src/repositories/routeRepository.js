@@ -3,6 +3,7 @@ import { Category } from '../models/Category.js';
 import { Location } from '../models/Location.js';
 import { Guide } from '../models/Guide.js';
 import { User } from '../models/User.js';
+import { DEFAULT_ROUTE_STATUS, ROUTE_STATUSES } from '../utils/routeStatus.js';
 
 const routePopulate = [
   { path: 'categoryId', model: Category, match: { deletedAt: null } },
@@ -33,7 +34,13 @@ export const routeRepository = {
   findAll: async (filters = {}) => {
     const allowedFilters = ['categoryId', 'locationId', 'guideId', 'createdByUserId', 'difficulty', 'status', 'isActive'];
     const filter = Object.fromEntries(allowedFilters.filter((field) => Object.hasOwn(filters, field)).map((field) => [field, filters[field]]));
-    const routes = await Route.find({ ...filter, deletedAt: null }).sort({ createdAt: -1 }).populate(routePopulate);
+    if (filter.status === DEFAULT_ROUTE_STATUS) {
+      // Incluir los estados heredados que se presentan como programado al leerlos.
+      filter.status = { $nin: ROUTE_STATUSES.filter((status) => status !== DEFAULT_ROUTE_STATUS) };
+    }
+    const includeDeleted = filters.includeDeleted === true;
+    if (!includeDeleted) filter.deletedAt = null;
+    const routes = await Route.find(filter).setOptions({ includeDeleted }).sort({ createdAt: -1 }).populate(routePopulate);
     return routes;
   },
 

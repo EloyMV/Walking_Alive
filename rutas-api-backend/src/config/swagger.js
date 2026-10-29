@@ -118,7 +118,7 @@ for (const resource of resources) {
   };
   for (const [suffix, field, schema] of [
     ['is-active', 'isActive', { type: 'boolean' }],
-    ['status', 'status', { type: 'string', minLength: 1, maxLength: 50 }]
+    ['status', 'status', model === Route ? properties.status : { type: 'string', minLength: 1, maxLength: 50 }]
   ]) {
     swaggerDocument.paths[`/${path}/{id}/${suffix}`] = {
       parameters: [idParameter],

@@ -2,6 +2,7 @@ export default function DataTable({
   rows,
   columns,
   rowKey = 'id',
+  rowClassName,
   emptyMessage = 'No hay datos para mostrar.'
 }) {
   if (rows.length === 0) {
@@ -16,7 +17,7 @@ export default function DataTable({
         </thead>
         <tbody>
           {rows.map((row) => (
-            <tr key={row[rowKey]}>
+            <tr key={row[rowKey]} className={rowClassName?.(row)}>
               {columns.map((column) => (
                 <td key={column.key}>
                   {column.render ? column.render(row) : row[column.key]}

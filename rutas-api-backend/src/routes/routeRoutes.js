@@ -2,6 +2,11 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { routeController } from '../controllers/routeController.js';
 import { validateRequest } from '../middlewares/validateRequest.js';
+import { ROUTE_STATUSES } from '../utils/routeStatus.js';
+
+const routeStatus = z.enum(ROUTE_STATUSES, {
+  errorMap: () => ({ message: 'El estado debe ser programado, en curso o finalizado' })
+});
 
 const routeIdParams = z.object({
   id: z.string().regex(/^[a-fA-F0-9]{24}$/, 'Formato de ID inválido')
@@ -23,7 +28,7 @@ const routeBody = z.object({
   recommendedEquipment: z.string().trim().max(5000).optional(),
   minParticipants: z.number().int().min(1).optional(),
   maxParticipants: z.number().int().min(1).optional(),
-  status: z.string().trim().min(1).max(50).optional(),
+  status: routeStatus.optional(),
   isActive: z.boolean().optional()
 }).strict();
 
@@ -39,7 +44,8 @@ export const getRoutesSchema = z.object({
     createdByUserId: routeIdParams.shape.id.optional(),
     difficulty: routeBody.shape.difficulty.optional(),
     status: routeBody.shape.status,
-    isActive: z.enum(['true', 'false']).transform((value) => value === 'true').optional()
+    isActive: z.enum(['true', 'false']).transform((value) => value === 'true').optional(),
+    includeDeleted: z.enum(['true', 'false']).transform((value) => value === 'true').optional()
   }).strict()
 });
 
@@ -82,7 +88,7 @@ export const changeIsActiveSchema = z.object({
 export const changeStatusSchema = z.object({
   params: routeIdParams,
   body: z.object({
-    status: z.string().trim().min(1, 'El estado es obligatorio').max(50)
+    status: routeStatus
   }).strict()
 });
 

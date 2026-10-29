@@ -119,6 +119,37 @@ test('Controladores y rutas HTTP con MongoDB', async (t) => {
       });
     }
 
+    await t.test('Rutas: listado con borrado lógico y restauración persistente', async () => {
+      const deleted = await request('POST', '/routes', 201, {
+        title: 'Ruta HTTP con borrado lógico', distanceKm: 7, difficulty: 'difícil',
+        locationId: documents.location._id
+      });
+      const path = `/routes/${deleted._id}`;
+      await request('DELETE', path, 204);
+      assert.ok(!(await request('GET', '/routes', 200)).some((route) => route._id === deleted._id));
+      assert.ok(!(await request('GET', '/routes?includeDeleted=false', 200)).some((route) => route._id === deleted._id));
+      const all = await request('GET', '/routes?includeDeleted=true', 200);
+      assert.ok(all.some((route) => route._id === documents.route._id && !route.deletedAt));
+      const listed = all.find((route) => route._id === deleted._id);
+      assert.ok(listed.deletedAt);
+      assert.equal(listed.isActive, false);
+      assert.equal(idOf(listed.locationId), documents.location._id);
+      const inactive = await request('GET', '/routes?includeDeleted=true&isActive=false&difficulty=dif%C3%ADcil', 200);
+      assert.ok(inactive.some((route) => route._id === deleted._id));
+      assert.ok(inactive.every((route) => route.isActive === false && route.difficulty === 'difícil'));
+      await request('GET', path, 404);
+      await request('PATCH', `${path}/is-active`, 404, { isActive: true });
+      await request('GET', '/routes?includeDeleted=incorrecto', 400);
+      await request('GET', '/routes?includeDeleted%5B%24ne%5D=false', 400);
+      const restored = await request('PATCH', `${path}/restore`, 200);
+      assert.equal(restored.deletedAt, null);
+      assert.equal(restored.isActive, true);
+      assert.ok((await request('GET', '/routes', 200)).some((route) => route._id === deleted._id));
+      const reloaded = (await request('GET', '/routes?includeDeleted=true', 200)).find((route) => route._id === deleted._id);
+      assert.equal(reloaded.deletedAt, null);
+      assert.equal(reloaded.isActive, true);
+    });
+
     await t.test('Relaciones obligatorias y endpoint de asociaciones', async () => {
       for (const [name, field, parent] of [['user', 'roleId', 'role'], ['guide', 'userId', 'user'], ['variant', 'routeId', 'route']]) {
         const endpoint = endpoints[name];

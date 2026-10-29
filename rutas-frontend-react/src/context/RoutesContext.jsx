@@ -12,7 +12,7 @@ export function RoutesProvider({ children }) {
     setLoading(true);
     setError('');
     try {
-      const data = await routesService.loadRoutes();
+      const data = await routesService.loadRoutes({ includeDeleted: true });
       setRoutes(data);
       return data;
     } catch (err) {
@@ -40,7 +40,28 @@ export function RoutesProvider({ children }) {
 
   const removeRoute = useCallback(async (id) => {
     await routesService.removeRoute(id);
-    setRoutes((current) => current.filter((route) => route._id !== id));
+    const deletedAt = new Date().toISOString();
+    setRoutes((current) => current.map((route) => (
+      route._id === id ? { ...route, deletedAt, isActive: false } : route
+    )));
+  }, []);
+
+  const changeRouteActivation = useCallback(async (id, isActive) => {
+    const updated = await routesService.changeRouteActivation(id, isActive);
+    setRoutes((current) => current.map((route) => (route._id === id ? updated : route)));
+    return updated;
+  }, []);
+
+  const changeRouteStatus = useCallback(async (id, status) => {
+    const updated = await routesService.changeRouteStatus(id, status);
+    setRoutes((current) => current.map((route) => (route._id === id ? updated : route)));
+    return updated;
+  }, []);
+
+  const restoreRoute = useCallback(async (id) => {
+    const restored = await routesService.restoreRoute(id);
+    setRoutes((current) => current.map((route) => (route._id === id ? restored : route)));
+    return restored;
   }, []);
 
   const value = {
@@ -50,7 +71,10 @@ export function RoutesProvider({ children }) {
     loadRoutes,
     createRoute,
     updateRoute,
-    removeRoute
+    removeRoute,
+    changeRouteActivation,
+    changeRouteStatus,
+    restoreRoute
   };
 
   return <RoutesContext.Provider value={value}>{children}</RoutesContext.Provider>;

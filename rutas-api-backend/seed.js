@@ -162,7 +162,7 @@ const buildSeedData = () => {
       guideId: guideByEmail[`${guide}@walkingalive.local`]._id,
       createdByUserId: userByEmail['admin@walkingalive.local']._id,
       startAt,
-      status: 'scheduled'
+      status: 'programado'
     });
   });
 

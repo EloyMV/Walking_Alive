@@ -28,9 +28,17 @@ async function request(path, options = {}) {
 }
 
 export const routesApi = {
-  list: () => request('/routes'),
+  list: ({ includeDeleted = false } = {}) => request(`/routes${includeDeleted ? '?includeDeleted=true' : ''}`),
   get: (id) => request(`/routes/${id}`),
   create: (data) => request('/routes', { method: 'POST', body: JSON.stringify(data) }),
   update: (id, data) => request(`/routes/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+  changeActivation: (id, isActive) => request(`/routes/${id}/is-active`, { method: 'PATCH', body: JSON.stringify({ isActive }) }),
+  changeStatus: (id, status) => request(`/routes/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }),
+  restore: (id) => request(`/routes/${id}/restore`, { method: 'PATCH' }),
   remove: (id) => request(`/routes/${id}`, { method: 'DELETE' })
 };
+
+export const categoriesApi = { list: () => request('/categories') };
+export const locationsApi = { list: () => request('/locations') };
+export const guidesApi = { list: () => request('/guides') };
+export const usersApi = { list: () => request('/users') };
