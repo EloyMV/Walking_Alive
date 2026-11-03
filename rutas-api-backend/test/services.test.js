@@ -89,6 +89,21 @@ test('Servicios de las entidades del seed con MongoDB', async (t) => {
         await assert.rejects(service[`get${entity}ById`](document._id), { statusCode: 404 });
         await assert.rejects(service[`get${entity}BySlug`](document.slug), { statusCode: 404 });
         assert.ok(!(await service[`getAll${plurals[name]}`]()).some((item) => idOf(item) === idOf(document)));
+        const list = (filters) => service[`getAll${plurals[name]}`](filters);
+        assert.ok(!(await list({ includeDeleted: false })).some((item) => idOf(item) === idOf(document)));
+        const includingDeleted = await list({ includeDeleted: true, _id: document._id });
+        assert.equal(includingDeleted.length, 1);
+        assert.ok(includingDeleted[0].deletedAt);
+        assert.equal(includingDeleted[0].isActive, false);
+        if (name === 'user') assert.equal(includingDeleted[0].passwordHash, undefined);
+        for (const [field, related] of Object.entries(references[name] || {})) {
+          assert.equal(idOf(includingDeleted[0][field]), idOf(documents[related]));
+        }
+        assert.ok((await list({ includeDeleted: true, isActive: false })).some((item) => idOf(item) === idOf(document)));
+        assert.ok(!(await list({ includeDeleted: true, isActive: true })).some((item) => idOf(item) === idOf(document)));
+        for (const includeDeleted of ['true', 'false', 1, null, { $ne: false }]) {
+          await assert.rejects(list({ includeDeleted }), { statusCode: 400 });
+        }
         assert.equal((await service.restoreDelete(document._id)).isActive, true);
         assert.deepEqual(await service[`delete${entity}`](document._id), { alreadyDeleted: false });
         assert.deepEqual(await service[`delete${entity}`](document._id), { alreadyDeleted: true });

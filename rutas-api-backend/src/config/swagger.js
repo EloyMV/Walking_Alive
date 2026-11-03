@@ -98,12 +98,12 @@ for (const resource of resources) {
   const filters = resource.filters || Object.keys(queryProperties).filter((key) => !['passwordHash', 'imageUrl'].includes(key));
   swaggerDocument.paths[`/${path}`] = {
     get: operation('Listar y filtrar', 200, {
-      parameters: filters.map((name) => {
+      parameters: [...filters.map((name) => {
         const schema = { ...queryProperties[name] };
         delete schema.default;
         delete schema.nullable;
         return { name, in: 'query', schema };
-      })
+      }), { name: 'includeDeleted', in: 'query', schema: { type: 'boolean', default: false }, description: 'Incluir también los documentos eliminados mediante borrado lógico.' }]
     }),
     post: operation('Crear', 201, { requestBody: jsonBody(ref('Input')) })
   };

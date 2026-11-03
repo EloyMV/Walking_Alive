@@ -24,6 +24,7 @@ const body = z.object({
 }).strict();
 
 const queryShape = {
+  includeDeleted: z.enum(['true', 'false']).transform((value) => value === 'true').optional(),
   _id: mongoId.optional(),
   slug: z.string().trim().min(1).max(300).optional()
 };

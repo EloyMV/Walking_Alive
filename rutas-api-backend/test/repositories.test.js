@@ -59,14 +59,18 @@ test('Repositorios del seed y servicio de rutas con MongoDB', async (t) => {
         assert.equal(await repository.findById(doc._id), null);
         assert.equal(await repository.findBySlug(doc.slug), null);
         assert.equal((await repository.findAll()).length, 0);
-        if (name === 'route') {
+        {
           assert.deepEqual(await repository.findAll({ includeDeleted: false }), []);
           const deleted = await repository.findAll({ includeDeleted: true });
           assert.equal(deleted.length, 1);
           assert.equal(String(deleted[0]._id), String(doc._id));
           assert.ok(deleted[0].deletedAt);
           assert.equal(deleted[0].isActive, false);
-          assert.equal(String(deleted[0].locationId._id), String(ids.location));
+          for (const [field, entity] of Object.entries(refs[name] || {})) {
+            assert.equal(String(deleted[0][field]._id), String(ids[entity]));
+            if (entity === 'user') assert.equal(deleted[0][field].passwordHash, undefined);
+          }
+          if (name === 'user') assert.equal(deleted[0].passwordHash, undefined);
           assert.equal((await repository.findAll({ includeDeleted: true, isActive: false })).length, 1);
           assert.deepEqual(await repository.findAll({ includeDeleted: true, isActive: true }), []);
         }

@@ -102,8 +102,20 @@ test('Controladores y rutas HTTP con MongoDB', async (t) => {
         await request('GET', path, 404);
         await request('GET', `${endpoint}/slug/${record.slug}`, 404);
         assert.ok(!(await request('GET', endpoint, 200)).some((item) => item._id === record._id));
+        assert.ok(!(await request('GET', `${endpoint}?includeDeleted=false`, 200)).some((item) => item._id === record._id));
+        const includingDeleted = await request('GET', `${endpoint}?includeDeleted=true`, 200);
+        const deleted = includingDeleted.find((item) => item._id === record._id);
+        assert.ok(deleted.deletedAt);
+        assert.equal(deleted.isActive, false);
+        assert.equal((await request('GET', `${endpoint}?includeDeleted=true&_id=${record._id}`, 200)).length, 1);
+        assert.ok((await request('GET', `${endpoint}?includeDeleted=true&isActive=false`, 200)).some((item) => item._id === record._id));
+        assert.ok(!(await request('GET', `${endpoint}?includeDeleted=true&isActive=true`, 200)).some((item) => item._id === record._id));
+        for (const [field, parent] of Object.entries(references[name] || {})) {
+          assert.equal(idOf(deleted[field]), idOf(documents[parent]));
+        }
         documents[name] = await request('PATCH', `${path}/restore`, 200);
         assert.equal(documents[name].isActive, true);
+        assert.equal((await request('GET', `${endpoint}?includeDeleted=true&_id=${record._id}`, 200))[0].deletedAt, null);
 
         await request('GET', `${endpoint}/incorrecto`, 400);
         await request('GET', `${endpoint}/${new mongoose.Types.ObjectId()}`, 404);
@@ -116,6 +128,10 @@ test('Controladores y rutas HTTP con MongoDB', async (t) => {
         await request('GET', `${endpoint}?unknownField=1`, 400);
         await request('GET', `${endpoint}?isActive=incorrecto`, 400);
         await request('GET', `${endpoint}?isActive%5B%24ne%5D=true`, 400);
+        await request('GET', `${endpoint}?includeDeleted=incorrecto`, 400);
+        await request('GET', `${endpoint}?includeDeleted=1`, 400);
+        await request('GET', `${endpoint}?includeDeleted=true&includeDeleted=false`, 400);
+        await request('GET', `${endpoint}?includeDeleted%5B%24ne%5D=false`, 400);
       });
     }
 

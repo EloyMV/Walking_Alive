@@ -9,7 +9,10 @@ export const createRepository = (model, writableFields, populate = []) => {
 
   return {
     findAll: async (filter = {}) => {
-      const documents = await model.find({ ...filter, deletedAt: null }).sort({ createdAt: -1 }).populate(populate);
+      const { includeDeleted: requestedIncludeDeleted, ...conditions } = filter;
+      const includeDeleted = requestedIncludeDeleted === true;
+      if (!includeDeleted) conditions.deletedAt = null;
+      const documents = await model.find(conditions).setOptions({ includeDeleted }).sort({ createdAt: -1 }).populate(populate);
       return documents;
     },
 

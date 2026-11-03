@@ -39,12 +39,15 @@ export class EntityService {
 
   async getAll(filters = {}) {
     this.#validateObject(filters, 'Los filtros deben ser un objeto');
-    const allowed = new Set([...this.fields, '_id', 'slug']);
+    const allowed = new Set([...this.fields, '_id', 'slug', 'includeDeleted']);
     allowed.delete('passwordHash');
     const filter = {};
     for (const [field, value] of Object.entries(filters)) {
       if (!allowed.has(field)) throw new AppError(`Filtro no permitido: ${field}`, 400);
       if (value === undefined) continue;
+      if (field === 'includeDeleted' && typeof value !== 'boolean') {
+        throw new AppError('includeDeleted debe ser un booleano', 400);
+      }
       if (field === '_id' || this.relations.some((relation) => relation.field === field)) {
         if (value !== null) this.#validateObjectId(value, `${field} debe ser un ID válido de MongoDB`);
       } else if (value !== null && typeof value === 'object') {
