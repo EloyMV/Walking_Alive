@@ -1,5 +1,5 @@
 import { guidesApi } from './api';
+import { createEntityService } from './createEntityService';
 
-export const guidesService = {
-  loadGuides: () => guidesApi.list()
-};
+const service = createEntityService(guidesApi, { singular: 'el guía', plural: 'los guías' });
+export const guidesService = { ...service, loadGuides: service.list };

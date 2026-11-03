@@ -27,18 +27,27 @@ async function request(path, options = {}) {
   return response.json();
 }
 
-export const routesApi = {
-  list: ({ includeDeleted = false } = {}) => request(`/routes${includeDeleted ? '?includeDeleted=true' : ''}`),
-  get: (id) => request(`/routes/${id}`),
-  create: (data) => request('/routes', { method: 'POST', body: JSON.stringify(data) }),
-  update: (id, data) => request(`/routes/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
-  changeActivation: (id, isActive) => request(`/routes/${id}/is-active`, { method: 'PATCH', body: JSON.stringify({ isActive }) }),
-  changeStatus: (id, status) => request(`/routes/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }),
-  restore: (id) => request(`/routes/${id}/restore`, { method: 'PATCH' }),
-  remove: (id) => request(`/routes/${id}`, { method: 'DELETE' })
-};
+export function createEntityApi(endpoint) {
+  const path = `/${endpoint.replace(/^\/+|\/+$/g, '')}`;
+  const recordPath = (id) => `${path}/${encodeURIComponent(id)}`;
 
-export const categoriesApi = { list: () => request('/categories') };
-export const locationsApi = { list: () => request('/locations') };
-export const guidesApi = { list: () => request('/guides') };
-export const usersApi = { list: () => request('/users') };
+  return {
+    list: ({ includeDeleted = false } = {}) => request(`${path}${includeDeleted ? '?includeDeleted=true' : ''}`),
+    get: (id) => request(recordPath(id)),
+    create: (data) => request(path, { method: 'POST', body: JSON.stringify(data) }),
+    update: (id, data) => request(recordPath(id), { method: 'PATCH', body: JSON.stringify(data) }),
+    changeActivation: (id, isActive) => request(`${recordPath(id)}/is-active`, { method: 'PATCH', body: JSON.stringify({ isActive }) }),
+    changeStatus: (id, status) => request(`${recordPath(id)}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }),
+    restore: (id) => request(`${recordPath(id)}/restore`, { method: 'PATCH' }),
+    remove: (id) => request(recordPath(id), { method: 'DELETE' })
+  };
+}
+
+export const routesApi = createEntityApi('routes');
+export const rolesApi = createEntityApi('roles');
+export const categoriesApi = createEntityApi('categories');
+export const locationsApi = createEntityApi('locations');
+export const guidesApi = createEntityApi('guides');
+export const usersApi = createEntityApi('users');
+export const variantsApi = createEntityApi('variants');
+export const imagesApi = createEntityApi('images');

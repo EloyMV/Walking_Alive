@@ -1,5 +1,5 @@
 import { locationsApi } from './api';
+import { createEntityService } from './createEntityService';
 
-export const locationsService = {
-  loadLocations: () => locationsApi.list()
-};
+const service = createEntityService(locationsApi, { singular: 'la ubicación', plural: 'las ubicaciones' });
+export const locationsService = { ...service, loadLocations: service.list };
