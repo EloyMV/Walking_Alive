@@ -60,21 +60,24 @@ export default function RouteForm({
   return (
     <form className="card form-card" onSubmit={handleSubmit(onSubmit)} noValidate>
       <div className="form-grid">
-        <label>
+        <label className="full-width">
           <span>Título *</span>
           <input {...register('title')} maxLength={120} placeholder="Ruta del Cares" aria-invalid={Boolean(errors.title)} />
           {errors.title && <small className="field-error">{errors.title.message}</small>}
         </label>
-        {relationFields.map(({ name, label, collection, empty }) => {
+        <fieldset className="form-relations full-width">
+          <legend>Relaciones</legend>
+          <p className="muted">Selecciona o cambia la categoría, la ubicación, el guía y el usuario creador de la ruta.</p>
+          <div className="form-grid">{relationFields.map(({ name, label, collection, empty }) => {
           const options = relations[collection] || [];
           return (
-            <label key={name}>
+            <label key={name} htmlFor={`route-${name}`}>
               <span>{label}</span>
               <Controller
                 name={name}
                 control={control}
                 render={({ field }) => (
-                  <select {...field} disabled={relationsDisabled} aria-invalid={Boolean(errors[name])}>
+                  <select {...field} id={`route-${name}`} disabled={relationsDisabled} aria-invalid={Boolean(errors[name])}>
                     <option value="">{loadingRelations ? 'Cargando…' : empty}</option>
                     {field.value && !options.some((option) => option._id === field.value) && (
                       <option value={field.value}>{getRelationLabel(initialValues[name])}</option>
@@ -89,7 +92,8 @@ export default function RouteForm({
               {errors[name] && <small className="field-error">{errors[name].message}</small>}
             </label>
           );
-        })}
+        })}</div>
+        </fieldset>
         <label>
           <span>Ubicación en texto</span>
           <input {...register('location')} maxLength={100} placeholder="Picos de Europa" aria-invalid={Boolean(errors.location)} />

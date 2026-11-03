@@ -1,5 +1,6 @@
 import { NavLink, Outlet } from 'react-router-dom';
 import { ROUTES } from '../routes/paths';
+import { entityConfigs } from '../features/entities/entityConfigs';
 
 export default function Layout() {
   return (
@@ -24,6 +25,12 @@ export default function Layout() {
           </nav>
         </div>
       </header>
+      <nav className="entity-navigation" aria-label="Secciones de WalkingAlive">
+        <div className="container entity-navigation-links">
+          <NavLink to={ROUTES.routes}>Rutas</NavLink>
+          {entityConfigs.map(({ key, plural }) => <NavLink key={key} to={ROUTES.entityList(key)}>{plural}</NavLink>)}
+        </div>
+      </nav>
       <main className="container main-content">
         <Outlet />
       </main>
