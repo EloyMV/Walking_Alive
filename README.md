@@ -58,6 +58,16 @@ Los archivos de `mongodb_rutas_json/` se pueden importar desde MongoDB Compass s
 | DELETE | `/api/routes/:id` | Eliminar una ruta mediante borrado lógico |
 | PATCH | `/api/routes/:id/restore` | Restaurar y activar una ruta eliminada |
 
-El listado del frontend permite cambiar el estado y la disponibilidad (`isActive`) directamente, y muestra descripción y fechas. Las rutas eliminadas permanecen visibles en gris y ofrecen la acción de restaurar. La creación y edición vuelven al listado al guardar.
+El listado del frontend permite cambiar dificultad, estado y disponibilidad (`isActive`) directamente, y muestra descripción y fechas. Las rutas eliminadas permanecen visibles en gris y ofrecen la acción de restaurar. La creación y edición vuelven al listado al guardar.
+
+## Gestión de todos los modelos
+
+WalkingAlive incluye listados, creación y edición de rutas, roles, usuarios, categorías, ubicaciones, guías, variantes e imágenes. La navegación permite cambiar entre las ocho secciones.
+
+Cada entidad tiene su servicio y hook. Los formularios cargan las relaciones mediante esos hooks y presentan un desplegable por clave ajena. Los estados respetan los valores propios de cada modelo. Desde los listados se puede cambiar el estado y la disponibilidad, eliminar mediante borrado lógico y restaurar; los registros eliminados siguen visibles en gris tras recargar.
+
+Los siete modelos adicionales comparten los endpoints `GET /api/:entidad?includeDeleted=true`, `POST /api/:entidad`, `PATCH /api/:entidad/:id`, `PATCH /api/:entidad/:id/status`, `PATCH /api/:entidad/:id/is-active`, `DELETE /api/:entidad/:id` y `PATCH /api/:entidad/:id/restore`.
+
+El modelo de usuario actual recibe `passwordHash`, no una contraseña en texto plano. El formulario lo solicita al crear y permite dejarlo vacío al editar para conservarlo; nunca muestra el hash guardado.
 
 Las dependencias, los archivos `.env` y las compilaciones locales quedan excluidos del repositorio. Los archivos `.env.example` documentan la configuración necesaria.
