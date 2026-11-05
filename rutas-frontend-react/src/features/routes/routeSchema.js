@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { ROUTE_STATUS_VALUES } from './routeStatus';
+import { isHttpImageUrl } from '../../utils/imageUrls';
 
 const relationId = z.preprocess(
   (value) => (value === '' || value === undefined ? null : value),
@@ -24,6 +25,9 @@ export const routeSchema = z.object({
     z.number({ error: 'Introduce una distancia válida.' }).min(0.1, 'La distancia debe ser de al menos 0.1 km.')
   ),
   difficulty: z.enum(['fácil', 'moderada', 'difícil'], { error: 'Selecciona una dificultad válida.' }),
+  url_image: z.array(
+    z.string().trim().refine(isHttpImageUrl, 'Cada imagen debe tener una URL HTTP o HTTPS válida.')
+  ),
   description: z.string().trim().max(500, 'Máximo 500 caracteres.')
 }).refine((data) => Boolean(data.location || data.locationId), {
   message: 'Selecciona una ubicación o introduce una ubicación en texto.',

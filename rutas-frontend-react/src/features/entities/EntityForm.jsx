@@ -2,6 +2,7 @@ import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { createEntitySchema, getEntityDefaultValues } from './entitySchema';
 import { relationLabel } from './entityResources';
+import ImageGalleryField from '../../components/ImageGalleryField';
 
 export default function EntityForm({ config, initialValues = {}, editing = false, relations = {}, relationsLoading = false, relationsError = false, onSubmit, submitting = false }) {
   const { control, register, handleSubmit, formState: { errors } } = useForm({
@@ -52,6 +53,9 @@ export default function EntityForm({ config, initialValues = {}, editing = false
     </fieldset>}
     <div className="form-grid">
       {dataFields.map(renderLabel)}
+      {config.imageGallery && <Controller name="url_image" control={control} render={({ field }) => (
+        <ImageGalleryField value={field.value} onChange={field.onChange} disabled={blocked} error={errors.url_image?.message} />
+      )} />}
       <label><span>Estado *</span><select {...register('status')} aria-invalid={Boolean(errors.status)}>{statusOptions.map(({ value, label }) => <option key={value} value={value}>{label}</option>)}</select>{errors.status && <small className="field-error">{errors.status.message}</small>}</label>
       <label><span>Disponibilidad *</span><select {...register('isActive')} aria-invalid={Boolean(errors.isActive)}><option value="true">Disponible</option><option value="false">No disponible</option></select>{errors.isActive && <small className="field-error">{errors.isActive.message}</small>}</label>
     </div>

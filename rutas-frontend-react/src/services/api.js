@@ -50,4 +50,3 @@ export const locationsApi = createEntityApi('locations');
 export const guidesApi = createEntityApi('guides');
 export const usersApi = createEntityApi('users');
 export const variantsApi = createEntityApi('variants');
-export const imagesApi = createEntityApi('images');

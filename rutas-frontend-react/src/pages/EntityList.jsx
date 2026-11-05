@@ -13,7 +13,7 @@ export default function EntityList({ config }) {
   const [pending, setPending] = useState({});
   const locks = useRef(new Set());
   const [actionError, setActionError] = useState('');
-  const visibleFields = config.fields.filter(({ name, type }) => name !== config.titleField && name !== 'description' && type !== 'password' && name !== 'imageUrl');
+  const visibleFields = config.fields.filter(({ name, type }) => name !== config.titleField && name !== 'description' && type !== 'password');
   const listFields = (config.listFields || []).map((name) => config.fields.find((field) => field.name === name)).filter(Boolean);
 
   async function perform(item, action) {
@@ -37,8 +37,8 @@ export default function EntityList({ config }) {
   const blocked = (item) => Boolean(item.deletedAt || pending[item._id]);
   const columns = [
     { key: 'title', label: config.singular, render: (item) => <>
+      {config.imageGallery && Array.isArray(item.url_image) && item.url_image[0] && <img className="entity-list-thumbnail" src={item.url_image[0]} alt={`Imagen de ${entityTitle(config, item)}`} loading="lazy" />}
       <strong>{entityTitle(config, item)}</strong>
-      {config.key === 'images' && <span className="table-subtitle">{item.url}</span>}
       {item.description && !listFields.some(({ name }) => name === 'description') && <p className="route-description">{item.description}</p>}
       <dl className="entity-details">{visibleFields.filter(({ name }) => !listFields.some((field) => field.name === name)).map((field) => <div key={field.name}><dt>{field.label}</dt><dd>{displayValue(item[field.name])}</dd></div>)}</dl>
       <small className="route-meta">ID: {item._id}</small>

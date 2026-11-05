@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { isHttpImageUrl, normalizeImageUrls } from '../../utils/imageUrls';
 
 const mongoId = /^[a-fA-F0-9]{24}$/;
 const isBlank = (value) => value === '' || value === null || value === undefined;
@@ -55,6 +56,11 @@ function fieldSchema(field, editing) {
 
 export function createEntitySchema(config, { editing = false } = {}) {
   const shape = Object.fromEntries(config.fields.map((field) => [field.name, fieldSchema(field, editing)]));
+  if (config.imageGallery) {
+    shape.url_image = z.array(
+      z.string().trim().refine(isHttpImageUrl, 'Cada imagen debe tener una URL HTTP o HTTPS válida.')
+    );
+  }
   return z.object({
     ...shape,
     status: z.string().trim().min(1, 'El estado es obligatorio.').max(50, 'Máximo 50 caracteres.'),
@@ -69,9 +75,9 @@ export function getEntityDefaultValues(config, initialValues = {}) {
     if (field.type === 'password') value = '';
     if (field.type === 'relation') value = value?._id ?? value ?? '';
     if (field.decimal && value && typeof value === 'object') value = value.$numberDecimal ?? value.toString();
-    if (field.name === 'imageUrl' && value === undefined) value = initialValues.images?.find((image) => image.isCover)?.url;
     values[field.name] = value ?? field.defaultValue ?? (field.type === 'checkbox' ? false : '');
   }
+  if (config.imageGallery) values.url_image = normalizeImageUrls(initialValues.url_image);
   values.status = initialValues.status ?? config.defaultStatus;
   values.isActive = String(initialValues.isActive ?? true);
   return values;

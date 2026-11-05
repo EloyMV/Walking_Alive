@@ -96,6 +96,124 @@
   font-size: .85rem;
 }
 
+.image-gallery {
+  min-width: 0;
+  margin: 0;
+  padding: 20px;
+  border: 1px solid #d5dfcf;
+  border-radius: 12px;
+  background: #f8f9f2;
+}
+
+.image-gallery legend {
+  padding: 0 8px;
+  color: var(--forest);
+  font-weight: 750;
+}
+
+.image-gallery > .muted {
+  margin-bottom: 16px;
+  font-size: .84rem;
+}
+
+.image-gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
+  gap: 14px;
+}
+
+.image-gallery-item {
+  display: grid;
+  align-content: start;
+  gap: 9px;
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #fffefb;
+}
+
+.image-gallery-preview {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 140px;
+  overflow: hidden;
+  border-radius: 7px;
+  background: #edf0e7;
+  color: var(--muted);
+  text-align: center;
+  font-size: .76rem;
+}
+
+.image-gallery-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.image-gallery-failed {
+  padding: 12px;
+}
+
+.image-gallery-url, .image-gallery-add label {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.image-gallery-url > span, .image-gallery-add label > span {
+  color: var(--ink);
+  font-size: .78rem;
+  font-weight: 650;
+}
+
+.image-gallery-url input, .image-gallery-add input {
+  width: 100%;
+  min-width: 0;
+  padding: 9px 10px;
+  border: 1px solid #dce2d7;
+  border-radius: 8px;
+  background: #fff;
+  color: var(--ink);
+  font-size: .78rem;
+}
+
+.image-gallery-item .button {
+  justify-self: start;
+}
+
+.image-gallery-empty {
+  margin: 0 0 16px;
+  color: var(--muted);
+  font-size: .84rem;
+}
+
+.image-gallery-add {
+  display: flex;
+  align-items: end;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.image-gallery-add label {
+  flex: 1;
+}
+
+.image-gallery-clear {
+  margin-top: 12px;
+}
+
+.entity-list-thumbnail {
+  display: block;
+  width: 84px;
+  height: 60px;
+  margin: 0 0 9px;
+  object-fit: cover;
+  border-radius: 7px;
+  background: #edf0e7;
+}
+
 .form-grid > .form-relations {
   margin-bottom: 0;
 }
@@ -498,6 +616,21 @@
 .skeleton-title {
   height: 18px;
   width: 38%;
+}
+
+@media (max-width: 700px) {
+  .image-gallery {
+    padding: 14px;
+  }
+
+  .image-gallery-add {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .image-gallery-add .button {
+    width: 100%;
+  }
 }
 
 .skeleton-line {

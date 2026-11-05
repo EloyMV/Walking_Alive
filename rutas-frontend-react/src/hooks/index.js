@@ -7,6 +7,5 @@ export { default as useGuides } from './useGuides';
 export { default as useUsers } from './useUsers';
 export { default as useRoles } from './useRoles';
 export { default as useVariants } from './useVariants';
-export { default as useImages } from './useImages';
 export { default as useEntityCollection } from './useEntityCollection';
 export { default as useEntityRecord } from './useEntityRecord';

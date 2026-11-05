@@ -1,7 +1,6 @@
-import { useCategories, useGuides, useImages, useLocations, useRoles, useUsers, useVariants } from '../../hooks';
+import { useCategories, useGuides, useLocations, useRoles, useUsers, useVariants } from '../../hooks';
 import { categoriesService } from '../../services/categoriesService';
 import { guidesService } from '../../services/guidesService';
-import { imagesService } from '../../services/imagesService';
 import { locationsService } from '../../services/locationsService';
 import { rolesService } from '../../services/rolesService';
 import { usersService } from '../../services/usersService';
@@ -10,7 +9,6 @@ import { variantsService } from '../../services/variantsService';
 export const entityResources = {
   categories: { useCollection: useCategories, service: categoriesService },
   guides: { useCollection: useGuides, service: guidesService },
-  images: { useCollection: useImages, service: imagesService },
   locations: { useCollection: useLocations, service: locationsService },
   roles: { useCollection: useRoles, service: rolesService },
   users: { useCollection: useUsers, service: usersService },
@@ -18,7 +16,6 @@ export const entityResources = {
 };
 
 export function entityTitle(config, item) {
-  if (config.key === 'images') return item.altText || item.url || 'Imagen';
   return [item[config.titleField], config.key === 'users' ? item.lastName : ''].filter(Boolean).join(' ') || config.singular;
 }
 

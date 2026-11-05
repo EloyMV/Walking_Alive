@@ -2,6 +2,8 @@ import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { routeSchema } from './routeSchema';
 import { getRouteStatus, ROUTE_STATUS_OPTIONS } from './routeStatus';
+import { normalizeImageUrls } from '../../utils/imageUrls';
+import ImageGalleryField from '../../components/ImageGalleryField';
 
 const relationFields = [
   { name: 'categoryId', label: 'Categoría', collection: 'categories', empty: 'Sin categoría' },
@@ -51,6 +53,7 @@ export default function RouteForm({
       isActive: String(initialValues.isActive ?? true),
       distanceKm: initialValues.distanceKm ?? '',
       difficulty: initialValues.difficulty ?? 'moderada',
+      url_image: normalizeImageUrls(initialValues.url_image),
       description: initialValues.description ?? ''
     }
   });
@@ -135,6 +138,9 @@ export default function RouteForm({
           <small className="counter">{description.length}/500</small>
           {errors.description && <small className="field-error">{errors.description.message}</small>}
         </label>
+        <Controller name="url_image" control={control} render={({ field }) => (
+          <ImageGalleryField value={field.value} onChange={field.onChange} disabled={relationsDisabled} error={errors.url_image?.message} />
+        )} />
       </div>
       <div className="form-actions">
         <button className="button" disabled={relationsDisabled}>{submitting ? 'Guardando…' : submitLabel}</button>

@@ -59,6 +59,7 @@ export default function RouteList() {
       label: 'Ruta',
       render: (route) => (
         <>
+          {Array.isArray(route.url_image) && route.url_image[0] && <img className="entity-list-thumbnail" src={route.url_image[0]} alt={`Imagen de ${route.title}`} loading="lazy" />}
           <strong>{route.title}</strong>
           <span className="table-subtitle">{route.locationId?.name || route.location}</span>
           <p className="route-description">{route.description || 'Esta ruta no tiene descripción.'}</p>
