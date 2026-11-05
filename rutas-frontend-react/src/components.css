@@ -411,9 +411,9 @@
 }
 
 .route-status.status-finalizado {
-  background-color: #e8ecea;
-  color: #617568;
-  border-color: #d7dfd9;
+  background-color: #fcf0e9;
+  color: #985b42;
+  border-color: #f0ddd0;
 }
 
 .route-status option, .route-difficulty option {
@@ -452,6 +452,16 @@
 
 .route-difficulty:disabled {
   cursor: not-allowed;
+}
+
+.route-status:focus, .route-difficulty:focus {
+  border-color: currentColor;
+  box-shadow: 0 0 0 3px color-mix(in srgb, currentColor 15%, transparent);
+}
+
+.route-status:focus-visible, .route-difficulty:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
 }
 
 .route-availability {
