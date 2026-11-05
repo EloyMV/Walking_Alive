@@ -30,8 +30,3 @@ export function displayValue(value) {
   if (typeof value === 'object') return value.$numberDecimal ?? relationLabel(value);
   return String(value);
 }
-
-export function formatEntityDate(value) {
-  const date = value ? new Date(value) : null;
-  return date && !Number.isNaN(date.getTime()) ? date.toLocaleString('es-ES', { dateStyle: 'medium', timeStyle: 'short' }) : 'Sin fecha';
-}

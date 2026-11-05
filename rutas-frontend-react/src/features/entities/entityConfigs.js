@@ -28,7 +28,7 @@ export const entityConfigs = [
       { name: 'name', label: 'Nombre', type: 'text', required: true, minLength: 2, maxLength: 100 },
       descriptionField
     ],
-    listFields: ['description']
+    listFields: []
   },
   {
     key: 'locations', singular: 'ubicación', plural: 'Ubicaciones', titleField: 'name',
@@ -44,7 +44,8 @@ export const entityConfigs = [
       { name: 'latitude', label: 'Latitud', type: 'number', min: -90, max: 90, step: 'any', nullable: true },
       { name: 'longitude', label: 'Longitud', type: 'number', min: -180, max: 180, step: 'any', nullable: true }
     ],
-    listFields: ['city', 'region', 'country', 'meetingPoint', 'latitude', 'longitude']
+    listFields: ['city', 'region', 'meetingPoint'],
+    listSummary: ['country']
   },
   {
     key: 'guides', singular: 'guía', plural: 'Guías', titleField: 'name',
@@ -59,7 +60,8 @@ export const entityConfigs = [
       { name: 'licenseNumber', label: 'Número de licencia', type: 'text', required: true, maxLength: 100 },
       { name: 'specialty', label: 'Especialidad', type: 'text', maxLength: 150 }
     ],
-    listFields: ['userId', 'email', 'phone', 'licenseNumber', 'specialty']
+    listFields: ['userId', 'specialty', 'licenseNumber'],
+    listSummary: ['email', 'phone']
   },
   {
     key: 'variants', singular: 'variante', plural: 'Variantes', titleField: 'name',
@@ -76,7 +78,8 @@ export const entityConfigs = [
       { name: 'minimumAge', label: 'Edad mínima', type: 'number', min: 0, step: 1, integer: true, defaultValue: 0 },
       { name: 'includesTransport', label: 'Incluye transporte', type: 'checkbox', defaultValue: false }
     ],
-    listFields: ['routeId', 'sku', 'price', 'currency', 'capacity', 'minimumAge', 'includesTransport']
+    listFields: ['routeId', 'price', 'capacity', 'includesTransport'],
+    listSummary: ['sku']
   },
   {
     key: 'users', singular: 'usuario', plural: 'Usuarios', titleField: 'name',
@@ -90,7 +93,7 @@ export const entityConfigs = [
       { name: 'passwordHash', label: 'Hash de contraseña', type: 'password', required: true, editOptional: true, help: 'El backend recibe un hash, no una contraseña en texto. Al editar, déjalo vacío para conservarlo.' },
       phoneField
     ],
-    listFields: ['lastName', 'email', 'roleId', 'phone']
+    listFields: ['roleId', 'email', 'phone']
   },
   {
     key: 'roles', singular: 'rol', plural: 'Roles', titleField: 'name',
@@ -100,7 +103,7 @@ export const entityConfigs = [
       { name: 'name', label: 'Nombre', type: 'text', required: true, maxLength: 50 },
       descriptionField
     ],
-    listFields: ['description']
+    listFields: []
   }
 ];
 

@@ -3,16 +3,11 @@ import { Link } from 'react-router-dom';
 import DataTable from '../components/DataTable';
 import ErrorState from '../components/ErrorState';
 import Skeleton from '../components/Skeleton';
+import RelationBadge from '../components/RelationBadge';
 import { useRoutes } from '../hooks';
 import { ROUTES } from '../routes/paths';
 import { confirmAction } from '../utils/sweetAlert';
 import { getRouteStatus, ROUTE_STATUS_OPTIONS } from '../features/routes/routeStatus';
-
-function formatDate(value) {
-  if (!value) return 'Sin fecha';
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? 'Sin fecha' : date.toLocaleString('es-ES', { dateStyle: 'medium', timeStyle: 'short' });
-}
 
 export default function RouteList() {
   const { routes, loading, error, loadRoutes, updateRoute, removeRoute, changeRouteActivation, changeRouteStatus, restoreRoute } = useRoutes();
@@ -61,11 +56,19 @@ export default function RouteList() {
         <>
           {Array.isArray(route.url_image) && route.url_image[0] && <img className="entity-list-thumbnail" src={route.url_image[0]} alt={`Imagen de ${route.title}`} loading="lazy" />}
           <strong>{route.title}</strong>
-          <span className="table-subtitle">{route.locationId?.name || route.location}</span>
-          <p className="route-description">{route.description || 'Esta ruta no tiene descripción.'}</p>
-          <small className="route-meta">ID: {route._id}</small>
+          {route.description && <p className="route-description admin-list-description" title={route.description}>{route.description}</p>}
         </>
       )
+    },
+    {
+      key: 'relations',
+      label: 'Relaciones',
+      render: (route) => <div className="relation-summary">
+        <div><span className="relation-caption">Categoría</span><RelationBadge value={route.categoryId} /></div>
+        <div><span className="relation-caption">Ubicación</span><RelationBadge value={route.locationId} fallback={route.location} /></div>
+        <div><span className="relation-caption">Guía</span><RelationBadge value={route.guideId} /></div>
+        <div><span className="relation-caption">Creado por</span><RelationBadge value={route.createdByUserId} /></div>
+      </div>
     },
     { key: 'distanceKm', label: 'Distancia', render: (route) => `${route.distanceKm} km` },
     {
@@ -137,16 +140,6 @@ export default function RouteList() {
           </label>
         );
       }
-    },
-    {
-      key: 'createdAt',
-      label: 'Fecha de alta',
-      render: (route) => (
-        <>
-          <span>{formatDate(route.createdAt)}</span>
-          <small className="route-meta">Actualizada: {formatDate(route.updatedAt)}</small>
-        </>
-      )
     },
     {
       key: 'actions',

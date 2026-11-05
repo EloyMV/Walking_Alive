@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom';
 import DataTable from '../components/DataTable';
 import ErrorState from '../components/ErrorState';
 import Skeleton from '../components/Skeleton';
-import { entityResources, entityTitle, displayValue, formatEntityDate } from '../features/entities/entityResources';
+import RelationBadge from '../components/RelationBadge';
+import { entityResources, entityTitle, displayValue } from '../features/entities/entityResources';
 import { confirmAction } from '../utils/sweetAlert';
 
 export default function EntityList({ config }) {
@@ -13,8 +14,8 @@ export default function EntityList({ config }) {
   const [pending, setPending] = useState({});
   const locks = useRef(new Set());
   const [actionError, setActionError] = useState('');
-  const visibleFields = config.fields.filter(({ name, type }) => name !== config.titleField && name !== 'description' && type !== 'password');
   const listFields = (config.listFields || []).map((name) => config.fields.find((field) => field.name === name)).filter(Boolean);
+  const summaryFields = (config.listSummary || []).map((name) => config.fields.find((field) => field.name === name)).filter(Boolean);
 
   async function perform(item, action) {
     if (locks.current.has(item._id)) return;
@@ -36,17 +37,19 @@ export default function EntityList({ config }) {
 
   const blocked = (item) => Boolean(item.deletedAt || pending[item._id]);
   const columns = [
-    { key: 'title', label: config.singular, render: (item) => <>
+    { key: 'title', label: config.singular.charAt(0).toUpperCase() + config.singular.slice(1), render: (item) => <>
       {config.imageGallery && Array.isArray(item.url_image) && item.url_image[0] && <img className="entity-list-thumbnail" src={item.url_image[0]} alt={`Imagen de ${entityTitle(config, item)}`} loading="lazy" />}
       <strong>{entityTitle(config, item)}</strong>
-      {item.description && !listFields.some(({ name }) => name === 'description') && <p className="route-description">{item.description}</p>}
-      <dl className="entity-details">{visibleFields.filter(({ name }) => !listFields.some((field) => field.name === name)).map((field) => <div key={field.name}><dt>{field.label}</dt><dd>{displayValue(item[field.name])}</dd></div>)}</dl>
-      <small className="route-meta">ID: {item._id}</small>
+      {item.description && <p className="route-description admin-list-description" title={item.description}>{item.description}</p>}
+      {summaryFields.filter(({ name }) => item[name]).map((field) => <span className="admin-list-summary" key={field.name}><span>{field.label}: </span>{displayValue(item[field.name])}</span>)}
     </> },
-    ...listFields.map((field) => ({ key: field.name, label: field.label, render: (item) => field.type === 'checkbox'
+    ...listFields.map((field) => ({ key: field.name, label: field.label, render: (item) => field.type === 'relation'
+      ? <RelationBadge value={item[field.name]} emptyLabel={field.required ? 'No disponible' : 'Sin asignar'} />
+      : field.type === 'checkbox'
       ? <label className="availability-control"><input type="checkbox" role="switch" aria-label={`${field.label} de ${entityTitle(config, item)}`} checked={Boolean(item[field.name])} disabled={blocked(item)} onChange={(event) => { const value = event.target.checked; perform(item, () => collection.updateItem(item._id, { [field.name]: value })); }} /><span className="availability-switch" aria-hidden="true" /><span>{item[field.name] ? 'Sí' : 'No'}</span></label>
       : field.type === 'select' ? <select className="route-status" aria-label={`${field.label} de ${entityTitle(config, item)}`} value={item[field.name]} disabled={blocked(item)} onChange={(event) => { const value = event.target.value; perform(item, () => collection.updateItem(item._id, { [field.name]: value })); }}>{field.options.map(({ value, label }) => <option key={value} value={value}>{label}</option>)}</select>
-        : displayValue(item[field.name]) })),
+        : field.name === 'price' ? <span className="admin-list-price">{displayValue(item.price)} {item.currency}</span>
+          : <span className="admin-list-value" title={displayValue(item[field.name])}>{displayValue(item[field.name])}</span> })),
     { key: 'status', label: 'Estado', render: (item) => <>
       <select className="route-status entity-status" aria-label={`Estado de ${entityTitle(config, item)}`} value={item.status} disabled={blocked(item)} onChange={(event) => { const status = event.target.value; perform(item, () => collection.changeStatus(item._id, status)); }}>
         {!config.statusOptions.some(({ value }) => value === item.status) && <option value={item.status}>{item.status}</option>}
@@ -58,7 +61,6 @@ export default function EntityList({ config }) {
       const active = !item.deletedAt && item.isActive !== false;
       return <label className="availability-control"><input type="checkbox" role="switch" aria-label={`Disponibilidad de ${entityTitle(config, item)}`} checked={active} disabled={blocked(item)} onChange={(event) => { const value = event.target.checked; perform(item, () => collection.changeActivation(item._id, value)); }} /><span className="availability-switch" aria-hidden="true" /><span>{active ? 'Disponible' : 'No disponible'}</span></label>;
     } },
-    { key: 'createdAt', label: 'Fecha de alta', render: (item) => <>{formatEntityDate(item.createdAt)}<small className="route-meta">Actualizado: {formatEntityDate(item.updatedAt)}</small></> },
     { key: 'actions', label: 'Acciones', render: (item) => item.deletedAt
       ? <button type="button" className="button button-small" disabled={Boolean(pending[item._id])} onClick={() => perform(item, () => collection.restoreItem(item._id))}>{pending[item._id] ? 'Restaurando…' : 'Restaurar'}</button>
       : <div className="card-actions">{pending[item._id] ? <span className="button button-ghost button-small" aria-disabled="true">Editar</span> : <Link className="button button-ghost button-small" to={`/${config.key}/${item._id}/edit`}>Editar</Link>}<button type="button" className="button button-danger button-small" disabled={Boolean(pending[item._id])} onClick={() => remove(item)}>Eliminar (borrado lógico)</button>{pending[item._id] && <small role="status">Guardando…</small>}</div> }

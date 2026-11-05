@@ -39,27 +39,74 @@
   min-height: 220px;
 }
 
-.entity-details {
-  min-width: 220px;
-  max-width: 350px;
-  margin: 10px 0;
-  font-size: .75rem;
+.relation-badge {
+  display: inline-block;
+  max-width: 240px;
+  padding: 5px 9px;
+  border: 1px solid #ccd9c3;
+  border-radius: 7px;
+  background: #eaf1e3;
+  color: var(--forest);
+  font-size: .76rem;
+  font-weight: 650;
+  overflow-wrap: anywhere;
 }
 
-.entity-details > div {
+.relation-badge-empty {
+  border-color: #dedfd9;
+  background: #f1f1ed;
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.relation-summary {
   display: grid;
-  grid-template-columns: minmax(85px, auto) minmax(0, 1fr);
-  gap: 8px;
-  margin: 5px 0;
+  min-width: 180px;
+  max-width: 260px;
+  gap: 9px;
 }
 
-.entity-details dt {
+.relation-caption {
+  display: block;
+  margin-bottom: 3px;
+  color: var(--muted);
+  font-size: .65rem;
   font-weight: 650;
 }
 
-.entity-details dd {
-  margin: 0;
+.admin-list-summary {
+  display: block;
+  margin-top: 7px;
+  color: var(--muted);
+  font-size: .75rem;
   overflow-wrap: anywhere;
+}
+
+.admin-list-summary > span {
+  font-weight: 650;
+}
+
+.admin-list-description, .admin-list-value {
+  display: -webkit-box;
+  max-width: 320px;
+  overflow: hidden;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.admin-list-price {
+  white-space: nowrap;
+  font-weight: 650;
+}
+
+.route-row-deleted .relation-badge {
+  border-color: #aaa;
+  background: #bdbdbd;
+  color: #454545;
+}
+
+.route-row-deleted .relation-caption, .route-row-deleted .admin-list-summary {
+  color: #505050;
 }
 
 .entity-status {
@@ -301,15 +348,6 @@
   overflow-wrap: anywhere;
 }
 
-.route-meta {
-  display: block;
-  max-width: 320px;
-  margin-top: 6px;
-  color: #7e8876;
-  font-size: .66rem;
-  overflow-wrap: anywhere;
-}
-
 .data-table .card-actions {
   min-width: 145px;
   align-items: stretch;
@@ -542,7 +580,7 @@
   text-decoration-color: #808080;
 }
 
-.route-row-deleted .table-subtitle, .route-row-deleted .route-description, .route-row-deleted .route-meta {
+.route-row-deleted .table-subtitle, .route-row-deleted .route-description {
   color: #505050;
 }
 
@@ -671,7 +709,7 @@
     max-width: none;
   }
   .data-table {
-    min-width: 1120px;
+    min-width: 640px;
   }
   .data-table th, .data-table td {
     padding: 18px 13px;
