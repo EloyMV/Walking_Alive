@@ -21,7 +21,6 @@ const queryShape = {
 };
 // Validar filtros simples y convertir los booleanos de la query explícitamente.
 for (const [field, schema] of Object.entries(body.shape)) {
-  if (field === 'imageUrl') continue;
   let input = z.string().trim();
   if (field === 'isActive') input = z.enum(['true', 'false']).transform((value) => value === 'true');
   queryShape[field] = input.pipe(schema).optional();

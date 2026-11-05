@@ -16,17 +16,28 @@ test('Servicios de las entidades del seed con MongoDB', async (t) => {
     const fixtures = {
       role: { name: 'Cliente de prueba', description: 'Rol de los servicios' },
       user: { name: 'Ana', lastName: 'Servicios', email: 'ana@services.test', passwordHash: 'hash-de-prueba', phone: '123456789' },
-      category: { name: 'Senderismo de prueba', description: 'Categoría de prueba' },
-      location: { name: 'Girona de prueba', latitude: 41.9, longitude: 2.8, city: 'Girona' },
-      guide: { name: 'Ana Guía', email: 'guia@services.test', licenseNumber: 'SERVICES-001', specialty: 'Naturaleza' },
-      variant: { name: 'Sin transporte', sku: 'SERVICES-BASE', price: '12.50', currency: 'EUR', capacity: 10 },
-      image: { url: '/services.jpg', source: 'example', altText: 'Imagen de servicios', position: 2 }
+      category: {
+        name: 'Senderismo de prueba', description: 'Categoría de prueba',
+        url_image: ['https://example.test/category-services.jpg', 'https://example.test/category-2-services.jpg']
+      },
+      location: {
+        name: 'Girona de prueba', latitude: 41.9, longitude: 2.8, city: 'Girona',
+        url_image: ['https://example.test/location-services.jpg', 'https://example.test/location-2-services.jpg']
+      },
+      guide: {
+        name: 'Ana Guía', email: 'guia@services.test', licenseNumber: 'SERVICES-001',
+        specialty: 'Naturaleza', url_image: ['https://example.test/guide-services.jpg', 'https://example.test/guide-2-services.jpg']
+      },
+      variant: {
+        name: 'Sin transporte', sku: 'SERVICES-BASE', price: '12.50', currency: 'EUR',
+        capacity: 10, url_image: ['https://example.test/variant-services.jpg', 'https://example.test/variant-2-services.jpg']
+      }
     };
     const references = {
       user: { roleId: 'role' }, guide: { userId: 'user' },
-      variant: { routeId: 'route' }, image: { variantId: 'variant' }
+      variant: { routeId: 'route' }
     };
-    const plurals = { role: 'Roles', user: 'Users', category: 'Categories', location: 'Locations', guide: 'Guides', variant: 'Variants', image: 'Images' };
+    const plurals = { role: 'Roles', user: 'Users', category: 'Categories', location: 'Locations', guide: 'Guides', variant: 'Variants' };
     const capitalized = (name) => name[0].toUpperCase() + name.slice(1);
     const payloadFor = (name) => ({
       ...fixtures[name],
@@ -44,7 +55,8 @@ test('Servicios de las entidades del seed con MongoDB', async (t) => {
         documents.route = await routeService.createRoute({
           title: 'Ruta para servicios', distanceKm: 5, difficulty: 'fácil',
           categoryId: documents.category._id, locationId: documents.location._id,
-          guideId: documents.guide._id, createdByUserId: documents.user._id
+          guideId: documents.guide._id, createdByUserId: documents.user._id,
+          url_image: ['https://example.test/route-services.jpg', 'https://example.test/route-2-services.jpg']
         });
       }
       const service = services[name];
@@ -77,7 +89,7 @@ test('Servicios de las entidades del seed con MongoDB', async (t) => {
         assert.equal(updated.slug, document.slug);
         assert.equal(updated.deletedAt, null);
         assert.equal(idOf(updated), idOf(document));
-        assert.equal(updated[name === 'image' ? 'url' : 'name'], document[name === 'image' ? 'url' : 'name']);
+        assert.equal(updated.name, document.name);
         await assert.rejects(service[`update${entity}`](document._id, {}), { statusCode: 400 });
         await assert.rejects(service.changeIsActive(document._id, 'false'), { statusCode: 400 });
         await assert.rejects(service.changeStatus(document._id, ''), { statusCode: 400 });
@@ -133,20 +145,6 @@ test('Servicios de las entidades del seed con MongoDB', async (t) => {
       }
     });
 
-    await t.test('Imagen: todas sus asociaciones se validan y pueden cambiarse', async () => {
-      for (const [field, parent] of Object.entries({ routeId: 'route', variantId: 'variant', categoryId: 'category', locationId: 'location', guideId: 'guide' })) {
-        await assert.rejects(services.image.createImage({ ...fixtures.image, [field]: 'incorrecto' }), { statusCode: 400 });
-        await assert.rejects(services.image.createImage({ ...fixtures.image, [field]: new mongoose.Types.ObjectId() }), { statusCode: 404 });
-        const image = await services.image.createImage({ ...fixtures.image, [field]: documents[parent]._id });
-        assert.equal(idOf(image[field]), idOf(documents[parent]));
-        assert.equal((await services.image.updateAssociations(image._id, { [field]: null }))[field], null);
-      }
-      const gallery = await services.image.createImage({ ...fixtures.image, categoryId: documents.category._id });
-      const result = await services.image.getAllImages({ categoryId: documents.category._id });
-      assert.ok(result.some((item) => idOf(item) === idOf(gallery)));
-      await assert.rejects(services.image.getAllImages({ categoryId: 'incorrecto' }), { statusCode: 400 });
-    });
-
     await t.test('Slugs únicos, cambios de nombre y conflictos de email y SKU', async () => {
       const first = await services.role.createRole({ name: 'Rol con acento' });
       const second = await services.role.createRole({ name: 'Rol con acénto' });
@@ -171,27 +169,34 @@ test('Servicios de las entidades del seed con MongoDB', async (t) => {
       ]) assert.equal(value.passwordHash, undefined);
     });
 
-    await t.test('Portadas e imágenes por entidad sin mezclar las relaciones', async () => {
-      for (const name of ['category', 'location', 'guide', 'variant']) {
-        const entity = capitalized(name);
-        const service = services[name];
+    await t.test('url_image se lee, actualiza y elimina directamente en cada entidad', async () => {
+      const imageEntities = [
+        ['category', services.category, 'Category', 'Categories'],
+        ['location', services.location, 'Location', 'Locations'],
+        ['guide', services.guide, 'Guide', 'Guides'],
+        ['route', routeService, 'Route', 'Routes'],
+        ['variant', services.variant, 'Variant', 'Variants']
+      ];
+      for (const [name, service, entity, plural] of imageEntities) {
         const record = documents[name];
-        const updated = await service[`update${entity}`](record._id, { imageUrl: ` /${name}-cover.jpg ` });
-        assert.equal(updated.images.filter((image) => image.isCover).length, 1);
-        const cover = updated.images.find((image) => image.isCover);
-        assert.equal(cover.url, `/${name}-cover.jpg`);
-        const reloaded = await service[`get${entity}ById`](record._id);
-        assert.ok(reloaded.images.some((image) => image._id === cover._id));
-        assert.ok((await service[`getAll${plurals[name]}`]()).find((item) => idOf(item) === idOf(record)).images.some((image) => image._id === cover._id));
-        const changed = await service[`update${entity}`](record._id, { imageUrl: `/${name}-new.jpg` });
-        assert.equal(changed.images.find((image) => image.isCover)._id, cover._id);
-        assert.ok(!(await routeService.getRouteById(documents.route._id)).images.some((image) => image._id === cover._id));
-        const deactivated = await service[`update${entity}`](record._id, { imageUrl: null });
-        assert.ok(!deactivated.images.some((image) => image._id === cover._id));
-        await assert.rejects(service[`update${entity}`](record._id, { imageUrl: 123 }), { statusCode: 400 });
+        const updatedUrl = `https://example.test/${name}-updated.jpg`;
+        const update = name === 'route' ? service.updateRoute : service[`update${entity}`];
+        const byId = name === 'route' ? service.getRouteById : service[`get${entity}ById`];
+        const all = name === 'route' ? service.getAllRoutes : service[`getAll${plural}`];
+        assert.deepEqual(record.url_image, fixtures[name]?.url_image ?? [
+          'https://example.test/route-services.jpg', 'https://example.test/route-2-services.jpg'
+        ]);
+        assert.deepEqual((await update.call(service, record._id, { url_image: [updatedUrl] })).url_image, [updatedUrl]);
+        assert.deepEqual((await byId.call(service, record._id)).url_image, [updatedUrl]);
+        assert.deepEqual((await all.call(service)).find((item) => idOf(item) === idOf(record)).url_image, [updatedUrl]);
+        assert.deepEqual((await update.call(service, record._id, { url_image: [] })).url_image, []);
       }
-      const category = await services.category.createCategory({ name: 'Categoría con portada', imageUrl: '/new-category-cover.jpg' });
-      assert.equal(category.images[0].url, '/new-category-cover.jpg');
+      const categoryWithoutImage = await services.category.createCategory({ name: 'Categoría sin imagen' });
+      assert.deepEqual(categoryWithoutImage.url_image, []);
+      await assert.rejects(
+        services.category.updateCategory(categoryWithoutImage._id, { url_image: ['ftp://example.test/image.jpg'] }),
+        { name: 'ValidationError' }
+      );
       await assert.rejects(services.location.updateLocation(documents.location._id, { latitude: 100 }), { name: 'ValidationError' });
       await assert.rejects(services.variant.updateVariant(documents.variant._id, { price: '-1' }), { name: 'ValidationError' });
     });

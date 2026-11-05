@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { userController } from '../controllers/userController.js';
 import { validateRequest } from '../middlewares/validateRequest.js';
+import { urlImageSchema } from '../utils/urlImage.js';
 
 const router = Router();
 const mongoId = z.string().regex(/^[a-fA-F0-9]{24}$/, 'Formato de ID inválido');
@@ -14,6 +15,7 @@ const body = z.object({
   email: z.string().trim().min(1).max(150).toLowerCase(),
   passwordHash: z.string().min(1),
   phone: z.string().trim().max(30).nullable().optional(),
+  url_image: urlImageSchema,
   status: status.optional(),
   isActive: z.boolean().optional()
 }).strict();
@@ -25,7 +27,7 @@ const queryShape = {
 };
 // Validar filtros simples y convertir los booleanos de la query explícitamente.
 for (const [field, schema] of Object.entries(body.shape)) {
-  if (field === 'passwordHash') continue;
+  if (field === 'passwordHash' || field === 'url_image') continue;
   let input = z.string().trim();
   if (field === 'isActive') input = z.enum(['true', 'false']).transform((value) => value === 'true');
   queryShape[field] = input.pipe(schema).optional();

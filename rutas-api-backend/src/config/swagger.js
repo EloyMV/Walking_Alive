@@ -6,21 +6,19 @@ import { Location } from '../models/Location.js';
 import { Guide } from '../models/Guide.js';
 import { Route } from '../models/Route.js';
 import { Variant } from '../models/Variant.js';
-import { Image } from '../models/Image.js';
 
 const resources = [
   { path: 'roles', model: Role },
   { path: 'users', model: User, associations: ['roleId'] },
-  { path: 'categories', model: Category, images: true },
-  { path: 'locations', model: Location, images: true },
-  { path: 'guides', model: Guide, associations: ['userId'], images: true },
+  { path: 'categories', model: Category },
+  { path: 'locations', model: Location },
+  { path: 'guides', model: Guide, associations: ['userId'] },
   {
-    path: 'routes', model: Route, images: true,
+    path: 'routes', model: Route,
     associations: ['categoryId', 'locationId', 'guideId', 'createdByUserId'],
     filters: ['categoryId', 'locationId', 'guideId', 'createdByUserId', 'difficulty', 'status', 'isActive']
   },
-  { path: 'variants', model: Variant, associations: ['routeId'], images: true },
-  { path: 'images', model: Image, associations: ['routeId', 'variantId', 'categoryId', 'locationId', 'guideId'] }
+  { path: 'variants', model: Variant, associations: ['routeId'] }
 ];
 const protectedFields = new Set(['_id', 'id', 'slug', 'deletedAt', 'createdAt', 'updatedAt', '__v']);
 const limit = (value) => Array.isArray(value) ? value[0] : value;
@@ -73,19 +71,26 @@ export const swaggerDocument = {
 };
 
 for (const resource of resources) {
-  const { path, model, associations, images } = resource;
+  const { path, model, associations } = resource;
   const properties = {};
   const required = [];
   model.schema.eachPath((name, schemaPath) => {
     if (protectedFields.has(name)) return;
     properties[name] = propertyFor(schemaPath);
+    if (name === 'url_image') {
+      properties[name] = {
+        type: 'array',
+        items: { type: 'string', format: 'uri', pattern: '^https?://' },
+        default: [],
+        description: 'Lista de URLs HTTP/HTTPS de imágenes. Usa [] para quitarlas todas.'
+      };
+    }
     // El estado tiene un default y los cuerpos HTTP permiten omitirlo.
     if (name !== 'status' && schemaPath.options.required && typeof schemaPath.options.required !== 'function') required.push(name);
   });
   if (model === Route) {
     for (const field of associations) properties[field].nullable = true;
   }
-  if (images) properties.imageUrl = { type: 'string', nullable: true, description: 'Portada; null o texto vacío la desactiva.' };
   const input = { type: 'object', additionalProperties: false, properties, required };
   if (model === Route) input.anyOf = [{ required: ['location'] }, { required: ['locationId'] }];
   swaggerDocument.components.schemas[`${model.modelName}Input`] = input;
@@ -95,7 +100,7 @@ for (const resource of resources) {
   const ref = (suffix) => ({ $ref: `#/components/schemas/${model.modelName}${suffix}` });
   const operation = (summary, status, extra = {}) => ({ tags: [path], summary, responses: responses(status), ...extra });
   const queryProperties = { ...properties, _id: idParameter.schema, slug: { type: 'string' } };
-  const filters = resource.filters || Object.keys(queryProperties).filter((key) => !['passwordHash', 'imageUrl'].includes(key));
+  const filters = resource.filters || Object.keys(queryProperties).filter((key) => !['passwordHash', 'url_image'].includes(key));
   swaggerDocument.paths[`/${path}`] = {
     get: operation('Listar y filtrar', 200, {
       parameters: [...filters.map((name) => {
@@ -127,7 +132,7 @@ for (const resource of resources) {
   }
   swaggerDocument.paths[`/${path}/{id}/restore`] = { parameters: [idParameter], patch: operation('Restaurar un documento borrado', 200) };
   if (associations) {
-    const associationProperties = Object.fromEntries(associations.map((field) => [field, { ...properties[field], nullable: model === Route || model === Image }]));
+    const associationProperties = Object.fromEntries(associations.map((field) => [field, { ...properties[field], nullable: model === Route }]));
     swaggerDocument.paths[`/${path}/{id}/associations`] = {
       parameters: [idParameter],
       patch: operation('Actualizar asociaciones', 200, {

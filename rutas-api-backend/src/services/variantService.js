@@ -9,12 +9,11 @@ class VariantService extends EntityService {
       label: 'Variante',
       fields: [
         'routeId', 'name', 'description', 'sku', 'price', 'currency',
-        'capacity', 'minimumAge', 'includesTransport', 'status', 'isActive'
+        'capacity', 'minimumAge', 'includesTransport', 'url_image', 'status', 'isActive'
       ],
       relations: [
         { field: 'routeId', repository: routeRepository, label: 'Ruta', required: true }
-      ],
-      imageEntity: 'variant'
+      ]
     });
   }
 

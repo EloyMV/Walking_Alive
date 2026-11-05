@@ -7,7 +7,6 @@ import { Location } from './src/models/Location.js';
 import { Guide } from './src/models/Guide.js';
 import { Route } from './src/models/Route.js';
 import { Variant } from './src/models/Variant.js';
-import { Image } from './src/models/Image.js';
 import { generateSlug } from './src/utils/slug.util.js';
 
 dotenv.config();
@@ -32,55 +31,85 @@ const buildSeedData = () => {
     roleId: roleBySlug[role]._id,
     slug: generateSlug(`${data.name} ${data.lastName}`),
     passwordHash: 'HASH_DE_EJEMPLO_NO_VALIDO',
-    phone: null
+    phone: null,
+    url_image: ['https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=800&q=80']
   }));
   const userByEmail = Object.fromEntries(users.map((user) => [user.email, user]));
 
   const categories = [
-    { name: 'Senderismo', description: 'Recorridos a pie por senderos y espacios naturales' },
-    { name: 'Montaña', description: 'Rutas de montaña con mayor exigencia física' },
-    { name: 'Cultural', description: 'Paseos por el patrimonio histórico y urbano' }
-  ].map((data) => new Category({ ...data, slug: generateSlug(data.name) }));
+    {
+      name: 'Senderismo', description: 'Recorridos a pie por senderos y espacios naturales',
+      url_image: 'https://images.unsplash.com/photo-1551632811-561732d1e306?auto=format&fit=crop&w=1200&q=80'
+    },
+    {
+      name: 'Montaña', description: 'Rutas de montaña con mayor exigencia física',
+      url_image: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=80'
+    },
+    {
+      name: 'Cultural', description: 'Paseos por el patrimonio histórico y urbano',
+      url_image: 'https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=1200&q=80'
+    }
+  ].map((data) => new Category({ ...data, url_image: [data.url_image], slug: generateSlug(data.name) }));
   const categoryBySlug = Object.fromEntries(categories.map((category) => [category.slug, category]));
 
   const locations = [
     {
       name: 'Picos de Europa', city: 'Cabrales', region: 'Asturias',
       description: 'Entorno natural de la garganta del Cares',
-      meetingPoint: 'Aparcamiento de Poncebos', latitude: 43.258, longitude: -4.831
+      meetingPoint: 'Aparcamiento de Poncebos', latitude: 43.258, longitude: -4.831,
+      url_image: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=80'
     },
     {
       name: 'El Chorro', city: 'Ardales', region: 'Málaga',
       description: 'Desfiladero de los Gaitanes y sus pasarelas',
-      meetingPoint: 'Acceso norte del Caminito del Rey', latitude: 36.914, longitude: -4.801
+      meetingPoint: 'Acceso norte del Caminito del Rey', latitude: 36.914, longitude: -4.801,
+      url_image: 'https://images.unsplash.com/photo-1472396961693-142e6e269027?auto=format&fit=crop&w=1200&q=80'
     },
     {
       name: 'Sierra Nevada', city: 'Capileira', region: 'Granada',
       description: 'Paisajes de alta montaña de Sierra Nevada',
-      meetingPoint: 'Centro de visitantes de Capileira', latitude: 36.961, longitude: -3.359
+      meetingPoint: 'Centro de visitantes de Capileira', latitude: 36.961, longitude: -3.359,
+      url_image: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80'
     },
     {
       name: 'Girona', city: 'Girona', region: 'Cataluña',
       description: 'Casco histórico y caminos naturales próximos a la ciudad',
-      meetingPoint: 'Estación de tren de Girona, salida principal', latitude: 41.9794, longitude: 2.8214
+      meetingPoint: 'Estación de tren de Girona, salida principal', latitude: 41.9794, longitude: 2.8214,
+      url_image: 'https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=1200&q=80'
     },
     {
       name: 'Barcelona', city: 'Barcelona', region: 'Cataluña',
       description: 'Parques, miradores y patrimonio de Barcelona',
-      meetingPoint: 'Plaça de Catalunya, junto a la oficina de turismo', latitude: 41.3874, longitude: 2.1686
+      meetingPoint: 'Plaça de Catalunya, junto a la oficina de turismo', latitude: 41.3874, longitude: 2.1686,
+      url_image: 'https://images.unsplash.com/photo-1511497584788-876760111969?auto=format&fit=crop&w=1200&q=80'
     },
     {
       name: 'Albufera de Valencia', city: 'Valencia', region: 'Comunitat Valenciana',
       description: 'Senderos y paisajes del entorno de la Albufera',
-      meetingPoint: 'Centro de visitantes del Racó de l’Olla', latitude: 39.334, longitude: -0.318
+      meetingPoint: 'Centro de visitantes del Racó de l’Olla', latitude: 39.334, longitude: -0.318,
+      url_image: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1200&q=80'
     }
-  ].map((data) => new Location({ ...data, country: 'España', slug: generateSlug(data.name) }));
+  ].map((data) => new Location({
+    ...data, url_image: [data.url_image], country: 'España', slug: generateSlug(data.name)
+  }));
   const locationBySlug = Object.fromEntries(locations.map((location) => [location.slug, location]));
 
   const guides = [
-    { email: 'carlos@walkingalive.local', specialty: 'Alta montaña', description: 'Guía de ejemplo especializado en recorridos de montaña' },
-    { email: 'luna@walkingalive.local', specialty: 'Naturaleza', description: 'Guía de ejemplo para senderismo y educación ambiental' },
-    { email: 'oriol@walkingalive.local', specialty: 'Patrimonio cultural', description: 'Guía de ejemplo para paseos urbanos y rutas históricas' }
+    {
+      email: 'carlos@walkingalive.local', specialty: 'Alta montaña',
+      description: 'Guía de ejemplo especializado en recorridos de montaña',
+      url_image: 'https://images.unsplash.com/photo-1551632811-561732d1e306?auto=format&fit=crop&w=1200&q=80'
+    },
+    {
+      email: 'luna@walkingalive.local', specialty: 'Naturaleza',
+      description: 'Guía de ejemplo para senderismo y educación ambiental',
+      url_image: 'https://images.unsplash.com/photo-1472396961693-142e6e269027?auto=format&fit=crop&w=1200&q=80'
+    },
+    {
+      email: 'oriol@walkingalive.local', specialty: 'Patrimonio cultural',
+      description: 'Guía de ejemplo para paseos urbanos y rutas históricas',
+      url_image: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80'
+    }
   ].map((data, index) => {
     const user = userByEmail[data.email];
     return new Guide({
@@ -89,7 +118,8 @@ const buildSeedData = () => {
       name: `${user.name} ${user.lastName}`,
       phone: null,
       licenseNumber: `DEMO-GUIA-${String(index + 1).padStart(3, '0')}`,
-      slug: `${user.slug}-guia`
+      slug: `${user.slug}-guia`,
+      url_image: [data.url_image]
     });
   });
   const guideByEmail = Object.fromEntries(guides.map((guide) => [guide.email, guide]));
@@ -99,48 +129,56 @@ const buildSeedData = () => {
     {
       title: 'Ruta del Cares', location: 'picos-de-europa', category: 'senderismo', guide: 'carlos',
       distanceKm: 12, difficulty: 'moderada', durationMinutes: 240, price: '35.00', minimumAge: 12,
+      url_image: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=80',
       description: 'Recorrido guiado de ejemplo por la garganta del Cares, entre paredes de roca y miradores.',
       recommendedEquipment: 'Botas de senderismo, agua, comida y protección solar'
     },
     {
       title: 'Caminito del Rey', location: 'el-chorro', category: 'senderismo', guide: 'luna',
       distanceKm: 7.7, difficulty: 'moderada', durationMinutes: 180, price: '30.00', minimumAge: 12,
+      url_image: 'https://images.unsplash.com/photo-1551632811-561732d1e306?auto=format&fit=crop&w=1200&q=80',
       description: 'Ruta de ejemplo por las pasarelas del desfiladero de los Gaitanes.',
       recommendedEquipment: 'Calzado cerrado, agua y ropa cómoda'
     },
     {
       title: 'Ascensión al Mulhacén', location: 'sierra-nevada', category: 'montana', guide: 'carlos',
       distanceKm: 20, difficulty: 'difícil', durationMinutes: 480, price: '65.00', minimumAge: 18,
+      url_image: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80',
       description: 'Jornada de ejemplo de alta montaña para participantes con experiencia y buena preparación física.',
       recommendedEquipment: 'Botas de montaña, abrigo, impermeable, comida y agua'
     },
     {
       title: 'Murallas y casco antiguo de Girona', location: 'girona', category: 'cultural', guide: 'oriol',
       distanceKm: 4.5, difficulty: 'fácil', durationMinutes: 120, price: '18.00', minimumAge: 6,
+      url_image: 'https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=1200&q=80',
       description: 'Paseo por calles históricas, plazas y miradores del casco antiguo de Girona.',
       recommendedEquipment: 'Calzado cómodo, agua y cámara de fotos'
     },
     {
       title: 'Senderismo al castillo de Sant Miquel', location: 'girona', category: 'senderismo', guide: 'luna',
       distanceKm: 10, difficulty: 'moderada', durationMinutes: 210, price: '25.00', minimumAge: 10,
+      url_image: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1200&q=80',
       description: 'Recorrido de ejemplo por caminos de bosque hasta un mirador del entorno de Girona.',
       recommendedEquipment: 'Zapatillas de senderismo, agua y tentempié'
     },
     {
       title: 'Miradores de Collserola', location: 'barcelona', category: 'senderismo', guide: 'luna',
       distanceKm: 9, difficulty: 'moderada', durationMinutes: 180, price: '22.00', minimumAge: 10,
+      url_image: 'https://images.unsplash.com/photo-1511497584788-876760111969?auto=format&fit=crop&w=1200&q=80',
       description: 'Ruta de ejemplo por senderos de Collserola con vistas sobre Barcelona.',
       recommendedEquipment: 'Calzado de senderismo, agua y protección solar'
     },
     {
       title: 'Paseo cultural por Montjuïc', location: 'barcelona', category: 'cultural', guide: 'oriol',
       distanceKm: 5, difficulty: 'fácil', durationMinutes: 150, price: '20.00', minimumAge: 6,
+      url_image: 'https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=1200&q=80',
       description: 'Paseo guiado de ejemplo por jardines, miradores y espacios históricos de Montjuïc.',
       recommendedEquipment: 'Calzado cómodo, gorra y agua'
     },
     {
       title: 'Senderos de la Albufera', location: 'albufera-de-valencia', category: 'senderismo', guide: 'luna',
       distanceKm: 6, difficulty: 'fácil', durationMinutes: 120, price: '24.00', minimumAge: 6,
+      url_image: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1200&q=80',
       description: 'Paseo de ejemplo para conocer los paisajes y observar las aves del entorno de la Albufera.',
       recommendedEquipment: 'Calzado cómodo, agua, prismáticos y repelente de insectos'
     }
@@ -154,6 +192,7 @@ const buildSeedData = () => {
 
     return new Route({
       ...data,
+      url_image: [data.url_image],
       slug: generateSlug(data.title),
       categoryId: categoryBySlug[category]._id,
       locationId: place._id,
@@ -183,28 +222,13 @@ const buildSeedData = () => {
         capacity: route.difficulty === 'difícil' ? 8 : 20,
         minimumAge: example.minimumAge,
         includesTransport,
+        url_image: [includesTransport
+          ? 'https://images.unsplash.com/photo-1551632811-561732d1e306?auto=format&fit=crop&w=1200&q=80'
+          : example.url_image],
         slug: `${route.slug}-${suffix}`
       });
     });
   });
-
-  const imageFor = (field, entity, label, position = 1) => new Image({
-    [field]: entity._id,
-    url: `/uploads/${entity.slug}-${position}.jpg`,
-    altText: `${label}: ${entity.title || entity.name}`,
-    position,
-    isCover: position === 1,
-    source: 'example',
-    author: null,
-    slug: `imagen-${entity.slug}-${position}`
-  });
-  const images = [
-    ...guides.map((guide) => imageFor('guideId', guide, 'Retrato de guía')),
-    ...categories.map((category) => imageFor('categoryId', category, 'Categoría')),
-    ...locations.map((location) => imageFor('locationId', location, 'Ubicación')),
-    ...routes.flatMap((route) => [imageFor('routeId', route, 'Portada de ruta'), imageFor('routeId', route, 'Paisaje de ruta', 2)]),
-    ...variants.map((variant) => imageFor('variantId', variant, 'Variante de ruta'))
-  ];
 
   // Orden de inserción: primero los documentos referenciados.
   return [
@@ -214,8 +238,7 @@ const buildSeedData = () => {
     { model: Location, documents: locations },
     { model: Guide, documents: guides },
     { model: Route, documents: routes },
-    { model: Variant, documents: variants },
-    { model: Image, documents: images }
+    { model: Variant, documents: variants }
   ];
 };
 

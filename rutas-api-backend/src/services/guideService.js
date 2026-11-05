@@ -9,12 +9,11 @@ class GuideService extends EntityService {
       label: 'Guía',
       fields: [
         'userId', 'name', 'description', 'email', 'phone', 'licenseNumber',
-        'specialty', 'status', 'isActive'
+        'specialty', 'url_image', 'status', 'isActive'
       ],
       relations: [
         { field: 'userId', repository: userRepository, label: 'Usuario', required: true }
-      ],
-      imageEntity: 'guide'
+      ]
     });
   }
 

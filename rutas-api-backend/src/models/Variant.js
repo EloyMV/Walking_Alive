@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { imageUrlArrayField } from '../utils/urlImage.js';
 
 const variantSchema = new mongoose.Schema(
   {
@@ -54,6 +55,7 @@ const variantSchema = new mongoose.Schema(
       type: Boolean,
       default: false
     },
+    url_image: imageUrlArrayField,
     slug: {
       type: String,
       required: true,
@@ -78,7 +80,9 @@ const variantSchema = new mongoose.Schema(
     }
   },
   {
-    timestamps: true
+    timestamps: true,
+    toJSON: { getters: true },
+    toObject: { getters: true }
   }
 );
 

@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { routeController } from '../controllers/routeController.js';
 import { validateRequest } from '../middlewares/validateRequest.js';
 import { ROUTE_STATUSES } from '../utils/routeStatus.js';
+import { urlImageSchema } from '../utils/urlImage.js';
 
 const routeStatus = z.enum(ROUTE_STATUSES, {
   errorMap: () => ({ message: 'El estado debe ser programado, en curso o finalizado' })
@@ -17,7 +18,7 @@ const routeBody = z.object({
   location: z.string().trim().min(1, 'La ubicación es obligatoria').max(100).optional(),
   distanceKm: z.number().min(0.1, 'La distancia debe ser de al menos 0.1 km'),
   difficulty: z.enum(['fácil', 'moderada', 'difícil']),
-  imageUrl: z.string().trim().nullable().optional(),
+  url_image: urlImageSchema,
   description: z.string().trim().max(500).optional(),
   categoryId: routeIdParams.shape.id.nullable().optional(),
   locationId: routeIdParams.shape.id.nullable().optional(),

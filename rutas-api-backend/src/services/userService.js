@@ -8,7 +8,7 @@ class UserService extends EntityService {
       repository: userRepository,
       label: 'Usuario',
       fields: [
-        'roleId', 'name', 'lastName', 'email', 'passwordHash', 'phone', 'status', 'isActive'
+        'roleId', 'name', 'lastName', 'email', 'passwordHash', 'phone', 'url_image', 'status', 'isActive'
       ],
       relations: [{ field: 'roleId', repository: roleRepository, label: 'Rol', required: true }],
       slugSource: (data) => `${data.name || ''} ${data.lastName || ''}`,

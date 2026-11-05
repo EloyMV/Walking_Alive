@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { guideController } from '../controllers/guideController.js';
 import { validateRequest } from '../middlewares/validateRequest.js';
+import { urlImageSchema } from '../utils/urlImage.js';
 
 const router = Router();
 const mongoId = z.string().regex(/^[a-fA-F0-9]{24}$/, 'Formato de ID inválido');
@@ -15,7 +16,7 @@ const body = z.object({
   phone: z.string().trim().max(30).nullable().optional(),
   licenseNumber: z.string().trim().min(1).max(100),
   specialty: z.string().trim().max(150).optional(),
-  imageUrl: z.string().trim().nullable().optional(),
+  url_image: urlImageSchema,
   status: status.optional(),
   isActive: z.boolean().optional()
 }).strict();
@@ -29,7 +30,7 @@ const numericFields = new Set([]);
 const booleanFields = new Set(["isActive"]);
 // Las query strings se convierten y después se validan con las reglas de cada campo.
 for (const [field, schema] of Object.entries(body.shape)) {
-  if (field === 'imageUrl') continue;
+  if (field === 'url_image') continue;
   let input = z.string().trim();
   if (numericFields.has(field)) input = input.min(1).transform(Number);
   if (booleanFields.has(field)) input = z.enum(['true', 'false']).transform((value) => value === 'true');

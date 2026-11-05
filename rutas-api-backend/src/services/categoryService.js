@@ -6,9 +6,8 @@ class CategoryService extends EntityService {
     super({
       repository: categoryRepository,
       label: 'Categoría',
-      fields: ['name', 'description', 'status', 'isActive'],
-      slugMaxLength: 150,
-      imageEntity: 'category'
+      fields: ['name', 'description', 'url_image', 'status', 'isActive'],
+      slugMaxLength: 150
     });
   }
 

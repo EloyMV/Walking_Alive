@@ -14,17 +14,18 @@ test('Repositorios del seed y servicio de rutas con MongoDB', async (t) => {
     const fixtures = {
       role: { name: 'Cliente' },
       user: { name: 'Ana', lastName: 'Test', email: 'ana@example.test', passwordHash: 'test-hash' },
-      category: { name: 'Senderismo' },
+      category: { name: 'Senderismo', url_image: ['https://example.test/category.jpg', 'https://example.test/category-2.jpg'] },
       location: { name: 'Girona', latitude: 41.9, longitude: 2.8 },
       guide: { name: 'Ana Test', email: 'guia@example.test', licenseNumber: 'TEST-001' },
-      route: { title: 'Ruta test', distanceKm: 5, difficulty: 'fácil', minParticipants: 2, maxParticipants: 10 },
-      variant: { name: 'Sin transporte', sku: 'TEST-BASE', price: '12.50', currency: 'EUR', capacity: 10 },
-      image: { url: '/test.jpg', source: 'example', position: 1, isCover: true }
+      route: { title: 'Ruta test', distanceKm: 5, difficulty: 'fácil', minParticipants: 2, maxParticipants: 10,
+        url_image: ['https://example.test/route.jpg', 'https://example.test/route-2.jpg'] },
+      variant: { name: 'Sin transporte', sku: 'TEST-BASE', price: '12.50', currency: 'EUR', capacity: 10,
+        url_image: ['https://example.test/variant.jpg'] }
     };
     const refs = {
       user: { roleId: 'role' }, guide: { userId: 'user' },
       route: { categoryId: 'category', locationId: 'location', guideId: 'guide', createdByUserId: 'user' },
-      variant: { routeId: 'route' }, image: { variantId: 'variant' }
+      variant: { routeId: 'route' }
     };
     const repos = {};
     for (const [name, fixture] of Object.entries(fixtures)) {
@@ -107,29 +108,27 @@ test('Repositorios del seed y servicio de rutas con MongoDB', async (t) => {
       await assert.rejects(repos.variant.update(ids.variant, { price: '-1' }), { name: 'ValidationError' });
       await assert.rejects(repos.route.update(ids.route, { maxParticipants: 1 }), { name: 'ValidationError' });
     });
-    await t.test('Service de referencia: portadas, imágenes, asociaciones y borrado repetido', async () => {
+    await t.test('Service de rutas: url_image, asociaciones y borrado repetido', async () => {
       const { createRouteSchema, updateRouteSchema } = await import('../src/routes/routeRoutes.js');
-      const input = { ...fixtures.route, title: 'Ruta con imágenes', locationId: String(ids.location), imageUrl: ' /cover.jpg ' };
+      const input = {
+        ...fixtures.route, title: 'Ruta con imagen', locationId: String(ids.location),
+        url_image: ' https://example.test/cover.jpg '
+      };
       const parsed = createRouteSchema.parse({ body: input }).body;
       const route = await routeService.createRoute(parsed);
-      assert.equal(route.images.length, 1);
-      assert.equal(route.images[0].url, '/cover.jpg');
-      const coverId = route.images[0]._id;
-      const gallery = await repos.image.create({ routeId: route._id, url: '/gallery.jpg', source: 'example', slug: 'gallery', position: 2 });
-      const changed = await routeService.updateRoute(route.id, updateRouteSchema.parse({ params: { id: route.id }, body: { imageUrl: '/new-cover.jpg' } }).body);
-      assert.equal(changed.images.length, 2);
-      assert.equal(changed.images[0]._id, coverId);
-      assert.equal(changed.images[0].url, '/new-cover.jpg');
-      assert.equal((await routeService.getRouteBySlug(route.slug)).images.length, 2);
+      assert.deepEqual(route.url_image, ['https://example.test/cover.jpg']);
+      const changed = await routeService.updateRoute(route.id, updateRouteSchema.parse({
+        params: { id: route.id }, body: { url_image: ['https://example.test/new-cover.jpg'] }
+      }).body);
+      assert.deepEqual(changed.url_image, ['https://example.test/new-cover.jpg']);
+      assert.deepEqual((await routeService.getRouteBySlug(route.slug)).url_image, ['https://example.test/new-cover.jpg']);
       const listing = await routeService.getAllRoutes({ locationId: ids.location });
-      assert.equal(listing.find((item) => item.id === route.id).images.length, 2);
+      assert.deepEqual(listing.find((item) => item.id === route.id).url_image, ['https://example.test/new-cover.jpg']);
       assert.deepEqual(await routeService.getAllRoutes({ status: 'nonexistent' }), []);
-      await repos.image.changeIsActive(gallery.id, false);
-      assert.equal((await routeService.getRouteById(route.id)).images.length, 1);
-      assert.deepEqual((await routeService.updateRoute(route.id, { imageUrl: null })).images, []);
-      assert.equal((await routeService.updateRoute(route.id, { imageUrl: '/reactivated.jpg' })).images[0]._id, coverId);
-      assert.deepEqual((await routeService.updateRoute(route.id, { imageUrl: '  ' })).images, []);
-      await assert.rejects(routeService.updateRoute(route.id, { imageUrl: 123 }), { statusCode: 400 });
+      assert.deepEqual((await routeService.updateRoute(route.id, { url_image: [] })).url_image, []);
+      assert.deepEqual((await routeService.updateRoute(route.id, { url_image: ['https://example.test/restored.jpg'] })).url_image, ['https://example.test/restored.jpg']);
+      assert.equal(createRouteSchema.safeParse({ body: { ...input, url_image: 'ftp://example.test/image.jpg' } }).success, false);
+      await assert.rejects(repos.route.update(route.id, { url_image: 'ftp://example.test/image.jpg' }), { name: 'ValidationError' });
       const associated = await routeService.updateAssociations(route.id, { categoryId: ids.category, title: 'Ignorado' });
       assert.equal(associated.title, route.title);
       assert.equal(String(associated.categoryId._id), String(ids.category));

@@ -1,5 +1,4 @@
 import mongoose from 'mongoose';
-import { imageRepository } from '../repositories/imageRepository.js';
 import { generateSlug } from '../utils/slug.util.js';
 import { AppError } from '../utils/app-error.js';
 
@@ -8,11 +7,11 @@ export class EntityService {
   constructor({
     repository, label, fields, relations = [],
     slugSource = (data) => data.name, slugFields = ['name'], slugMaxLength = 300,
-    imageEntity = null, sanitize = (plain) => plain, validate = async () => {}
+    sanitize = (plain) => plain, validate = async () => {}
   }) {
     Object.assign(this, {
       repository, label, relations, slugSource, slugFields, slugMaxLength,
-      imageEntity, sanitize, validate
+      sanitize, validate
     });
     const protectedFields = ['_id', 'id', 'slug', 'deletedAt', 'createdAt', 'updatedAt', '__v'];
     this.fields = fields.filter((field) => !protectedFields.includes(field));
@@ -33,7 +32,6 @@ export class EntityService {
         reservedSlugs.add(slug);
       }
     }
-    await this.#syncCoverImage(created, payload);
     return this.#present(created);
   }
 
@@ -79,7 +77,7 @@ export class EntityService {
   async update(id, payload) {
     const current = await this.#getCurrent(id);
     const data = this.#toPayload(payload);
-    if (!Object.keys(data).length && !(this.imageEntity && Object.hasOwn(payload, 'imageUrl'))) {
+    if (!Object.keys(data).length) {
       throw new AppError('Debe proporcionar al menos un campo para actualizar', 400);
     }
     const effective = { ...current, ...data };
@@ -98,7 +96,6 @@ export class EntityService {
         reservedSlugs.add(data.slug);
       }
     }
-    await this.#syncCoverImage(updated, payload);
     return this.#present(updated);
   }
 
@@ -155,10 +152,6 @@ export class EntityService {
 
   #toPayload(payload) {
     this.#validateObject(payload);
-    if (this.imageEntity && Object.hasOwn(payload, 'imageUrl') &&
-        payload.imageUrl !== null && typeof payload.imageUrl !== 'string') {
-      throw new AppError('imageUrl debe ser un texto o null', 400);
-    }
     return Object.fromEntries(this.fields
       .filter((field) => Object.hasOwn(payload, field) && payload[field] !== undefined)
       .map((field) => [field, typeof payload[field] === 'string' && field !== 'passwordHash'
@@ -214,17 +207,6 @@ export class EntityService {
     return new AppError(`Ya existe un registro con el mismo valor de ${fields.join(', ') || 'un campo único'}`, 409);
   }
 
-  async #syncCoverImage(document, payload) {
-    if (!this.imageEntity || !Object.hasOwn(payload, 'imageUrl')) return;
-    const url = payload.imageUrl;
-    if (typeof url !== 'string' || !url.trim()) {
-      await imageRepository.deactivateCoverByEntity(this.imageEntity, document._id);
-    } else {
-      const title = document.title || document.name || '';
-      await imageRepository.upsertCoverByEntity(this.imageEntity, document._id, url.trim(), `Portada: ${title}`);
-    }
-  }
-
   #toPlain(document) {
     return typeof document.toObject === 'function' ? document.toObject({ virtuals: true }) : { ...document };
   }
@@ -235,20 +217,7 @@ export class EntityService {
   }
 
   async #presentCollection(documents) {
-    const result = documents.map((document) => this.sanitize(this.#toPlain(document)));
-    if (!this.imageEntity || !result.length) return result;
-    const images = await imageRepository.findActiveByEntityIds(this.imageEntity, result.map((document) => document._id));
-    const grouped = new Map();
-    for (const image of images) {
-      const key = String(image[`${this.imageEntity}Id`]);
-      if (!grouped.has(key)) grouped.set(key, []);
-      grouped.get(key).push({
-        _id: String(image._id), url: image.url, altText: image.altText,
-        position: image.position, isCover: image.isCover
-      });
-    }
-    for (const document of result) document.images = grouped.get(String(document._id)) || [];
-    return result;
+    return documents.map((document) => this.sanitize(this.#toPlain(document)));
   }
 
   #notFound() {

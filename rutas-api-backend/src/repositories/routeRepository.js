@@ -21,7 +21,7 @@ const writableFields = [
   'title', 'slug', 'location', 'distanceKm', 'difficulty', 'description',
   'categoryId', 'locationId', 'guideId', 'createdByUserId',
   'durationMinutes', 'startAt', 'recommendedEquipment',
-  'minParticipants', 'maxParticipants', 'status', 'isActive'
+  'minParticipants', 'maxParticipants', 'url_image', 'status', 'isActive'
 ];
 const getWritableData = (data) =>
   Object.fromEntries(

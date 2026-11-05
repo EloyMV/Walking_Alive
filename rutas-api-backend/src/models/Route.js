@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import { DEFAULT_ROUTE_STATUS, normalizeLegacyRouteStatus, ROUTE_STATUSES } from '../utils/routeStatus.js';
+import { imageUrlArrayField } from '../utils/urlImage.js';
 
 const routeSchema = new mongoose.Schema(
   {
@@ -107,10 +108,13 @@ const routeSchema = new mongoose.Schema(
       trim: true,
       maxlength: [500, 'La descripción no puede superar los 500 caracteres'],
       default: ''
-    }
+    },
+    url_image: imageUrlArrayField
   },
   {
-    timestamps: true
+    timestamps: true,
+    toJSON: { getters: true },
+    toObject: { getters: true }
   }
 );
 

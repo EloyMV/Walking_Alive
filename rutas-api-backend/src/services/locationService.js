@@ -8,9 +8,8 @@ class LocationService extends EntityService {
       label: 'Ubicación',
       fields: [
         'name', 'description', 'meetingPoint', 'city', 'region', 'country',
-        'latitude', 'longitude', 'status', 'isActive'
-      ],
-      imageEntity: 'location'
+        'latitude', 'longitude', 'url_image', 'status', 'isActive'
+      ]
     });
   }
 

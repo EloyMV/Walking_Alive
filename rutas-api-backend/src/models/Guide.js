@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { imageUrlArrayField } from '../utils/urlImage.js';
 
 const guideSchema = new mongoose.Schema(
   {
@@ -43,6 +44,7 @@ const guideSchema = new mongoose.Schema(
       trim: true,
       maxlength: 150
     },
+    url_image: imageUrlArrayField,
     slug: {
       type: String,
       required: true,
@@ -67,7 +69,9 @@ const guideSchema = new mongoose.Schema(
     }
   },
   {
-    timestamps: true
+    timestamps: true,
+    toJSON: { getters: true },
+    toObject: { getters: true }
   }
 );
 

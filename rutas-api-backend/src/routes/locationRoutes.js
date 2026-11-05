@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { locationController } from '../controllers/locationController.js';
 import { validateRequest } from '../middlewares/validateRequest.js';
+import { urlImageSchema } from '../utils/urlImage.js';
 
 const router = Router();
 const mongoId = z.string().regex(/^[a-fA-F0-9]{24}$/, 'Formato de ID inválido');
@@ -16,7 +17,7 @@ const body = z.object({
   country: z.string().trim().max(100).optional(),
   latitude: z.number().finite().min(-90).max(90).nullable().optional(),
   longitude: z.number().finite().min(-180).max(180).nullable().optional(),
-  imageUrl: z.string().trim().nullable().optional(),
+  url_image: urlImageSchema,
   status: status.optional(),
   isActive: z.boolean().optional()
 }).strict();
@@ -28,7 +29,7 @@ const queryShape = {
 };
 // Validar filtros simples y convertir los booleanos de la query explícitamente.
 for (const [field, schema] of Object.entries(body.shape)) {
-  if (field === 'imageUrl') continue;
+  if (field === 'url_image') continue;
   let input = z.string().trim();
   if (field === 'latitude' || field === 'longitude') input = input.min(1).transform(Number);
   if (field === 'isActive') input = z.enum(['true', 'false']).transform((value) => value === 'true');
