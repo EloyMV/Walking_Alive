@@ -25,7 +25,11 @@ Puedes importar las siguientes peticiones en Postman o probar con `curl`.
   "location": "Ribeira Sacra (Ourense/Lugo)",
   "distanceKm": 14.2,
   "difficulty": "moderada",
-  "description": "Recorrido entre miradores y viñedos con vistas al río Sil."
+  "description": "Recorrido entre miradores y viñedos con vistas al río Sil.",
+  "url_image": [
+    "https://images.unsplash.com/photo-1551632811-561732d1e306?auto=format&fit=crop&w=1200&q=80",
+    "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=80"
+  ]
 }
 ```
 
@@ -39,9 +43,12 @@ Puedes importar las siguientes peticiones en Postman o probar con `curl`.
 ```json
 {
   "distanceKm": 15.0,
-  "difficulty": "difícil"
+  "difficulty": "difícil",
+  "url_image": []
 }
 ```
+
+`url_image` es opcional y es una lista de URLs HTTP/HTTPS. Enviar `[]` elimina todas las imágenes del registro; las respuestas devuelven el array `url_image` directamente.
 
 ---
 
